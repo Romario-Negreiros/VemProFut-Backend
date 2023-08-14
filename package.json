@@ -4,15 +4,15 @@
   "description": "",
   "main": "server.ts",
   "scripts": {
-    "dev": "nodemon src/server.ts",
+    "dev": "nodemon src/app/index.ts",
     "start": "sucrase ./src -d ./dist --transforms typescript,imports",
-    "build": "node dist/server.js",
+    "build": "node dist/index.js",
     "lint": "npx eslint --fix src/**"
   },
   "author": "Romario Negreiros Baldarenas Silva",
   "license": "ISC",
   "dependencies": {
-    "dot-env": "^0.0.1",
+    "dotenv": "^16.3.1",
     "fastify": "^4.21.0",
     "mysql2": "^3.6.0"
   },
