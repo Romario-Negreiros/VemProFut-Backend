@@ -2,6 +2,4 @@ node_modules
 
 # dev files
 *.txt
-
-# env
-.env.local
+.env
