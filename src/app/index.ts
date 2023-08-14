@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import usersRoutes from "../routes/users.routes";
+import userRoutes from "../routes/user.routes";
 
 interface IApp {
   fastify: ReturnType<typeof Fastify>;
@@ -16,11 +16,15 @@ class App implements IApp {
   }
 
   private readonly setRoutes = () => {
-    usersRoutes(this.fastify);
+    userRoutes(this.fastify);
   };
 
   private readonly runServer = () => {
-    this.fastify.listen({ port: 5000 }, () => {});
+    this.fastify.listen({ port: 5000 }, (err) => {
+      if (err !== null) {
+        console.log(`Erro ao rodar servidor local:\n${err.message}`);
+      }
+    });
   };
 }
 
