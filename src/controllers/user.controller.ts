@@ -31,7 +31,7 @@ class UserController implements IUserController {
         if (user === undefined) {
           return await res.status(404).send("Usuário não encontrado.");
         }
-
+        
         await res.status(200).send({ user: { ...user, teams: user.teams?.split(",") } });
       } catch (err) {
         console.log(err);
@@ -57,12 +57,32 @@ class UserController implements IUserController {
     try {
       await userServices.register(body);
 
-      await res.status(201).send(`Você foi registrado com sucesso, ${body.name}`);
+      await res.status(201).send(`Você foi registrado com sucesso, ${body.name}.`);
     } catch (err) {
       console.log(err);
       await res.status(500).send("Erro no processamento interno ao tentar registrar o usuário.");
     }
   };
+
+  updateTeams = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
+    const body = req.body as Omit<RequestBodyUser, 'name'>;
+    if (body.email === undefined || body.email === null) {
+      return await res.status(400).send("O campo 'email' está faltando na requisição.");
+    }
+
+    if (body.teams === undefined || body.teams === null || body.teams.length === 0) {
+      return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
+    }
+
+    try {
+      await userServices.updateTeams(body);
+
+      await res.status(201).send(`Seus times foram atualizados com sucesso.`);
+    } catch (err) {
+      console.log(err);
+      await res.status(500).send("Erro no processamento interno ao tentar atualizar os times do usuário.");
+    }
+  }
 }
 
 export default new UserController();
