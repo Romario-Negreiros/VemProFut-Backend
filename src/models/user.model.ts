@@ -5,5 +5,6 @@ export default interface User extends RowDataPacket {
   name?: string;
   email?: string;
   teams?: string;
-  created_at?: Date;
+  created_at?: string;
+  is_active?: number;
 }
