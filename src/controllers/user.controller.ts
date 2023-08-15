@@ -60,7 +60,7 @@ class UserController implements IUserController {
       await res.status(201).send(`Você foi registrado com sucesso, ${body.name}`);
     } catch (err) {
       console.log(err);
-      await res.status(500).send("Erro no processamento interno ao tentar buscar o usuário.");
+      await res.status(500).send("Erro no processamento interno ao tentar registrar o usuário.");
     }
   };
 }
