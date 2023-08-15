@@ -1,9 +1,16 @@
-import connection from "../app/db";
+import app from "../app";
 
 import type User from "../models/user.model";
 
+interface RequestBodyUser {
+  name: string;
+  email: string;
+  teams: string;
+}
+
 interface IUserServices {
   getOne: (email: string) => Promise<User>;
+  // register: (user: RequestBodyUser) => Promise<void>;
 }
 
 class UserServices implements IUserServices {
@@ -18,15 +25,12 @@ class UserServices implements IUserServices {
       ) teams ON users.id = teams.user_id
       WHERE users.email = ?;
     `;
-    return await new Promise((resolve, reject) => {
-      connection.query<User[]>(query, [email], (err, results) => {
-        if (err !== null) {
-          reject(err);
-        } else {
-          resolve(results?.[0]);
-        }
-      });
-    });
+    const [ result ] = await app.db.query<User[]>(query, [email]);
+    return result?.[0]
+  };
+
+  register = async ({ name, email, teams }: RequestBodyUser): Promise<Promise<void>> => {
+    
   };
 }
 
