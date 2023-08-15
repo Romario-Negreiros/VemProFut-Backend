@@ -10,7 +10,7 @@ interface RequestBodyUser {
 
 interface IUserServices {
   getOne: (email: string) => Promise<User>;
-  // register: (user: RequestBodyUser) => Promise<void>;
+  register: (user: RequestBodyUser) => Promise<void>;
 }
 
 class UserServices implements IUserServices {
@@ -25,12 +25,27 @@ class UserServices implements IUserServices {
       ) teams ON users.id = teams.user_id
       WHERE users.email = ?;
     `;
-    const [ result ] = await app.db.query<User[]>(query, [email]);
-    return result?.[0]
+    const [result] = await app.db.query<User[]>(query, [email]);
+    return result?.[0];
   };
 
-  register = async ({ name, email, teams }: RequestBodyUser): Promise<Promise<void>> => {
-    
+  register = async ({ name, email, teams }: RequestBodyUser): Promise<void> => {
+    try {
+      await app.db.beginTransaction();
+
+      await app.db.query("INSERT INTO users (name, email) VALUES (?, ?)", [name, email]);
+
+      await app.db.query("SET @user_id = LAST_INSERT_ID()");
+
+      for (const team of teams.split(",")) {
+        await app.db.query("INSERT INTO teams (team, user_id) VALUES (?, @user_id)", [team]);
+      }
+
+      await app.db.commit();
+    } catch (err) {
+      await app.db.rollback();
+      throw err;
+    }
   };
 }
 
