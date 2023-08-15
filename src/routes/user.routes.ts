@@ -34,16 +34,16 @@ function usersRoutes(app: TFastifyInstance) {
                 email: { type: "string" },
                 teams: { type: "array" },
                 created_at: { type: "string" },
-                is_active: { type: "number" }
-              }
+                is_active: { type: "number" },
+              },
             },
           },
           404: {
             type: "string",
           },
           500: {
-            type: "string"
-          }
+            type: "string",
+          },
         },
       },
     },
@@ -51,9 +51,42 @@ function usersRoutes(app: TFastifyInstance) {
   );
 
   // POST ROUTES
-  app.post(`${baseUrl}/register`, async (req, res) => {
-    await res.send({ bull: "shit" });
-  });
+  app.post(
+    `${baseUrl}/register`,
+    {
+      schema: {
+        body: {
+          email: {
+            type: "string",
+          },
+          teams: {
+            type: "string",
+          },
+        },
+        response: {
+          201: {
+            type: "string",
+          },
+          400: {
+            type: "string",
+          },
+          500: {
+            type: "string",
+          },
+        },
+        headers: {
+          type: "object",
+          properties: {
+            "Content-Type": {
+              type: "string",
+            },
+          },
+          required: ["Content-Type"],
+        },
+      },
+    },
+    userController.register,
+  );
 
   app.post(`${baseUrl}/verify-email`, async (req, res) => {
     await res.send({ bull: "shit" });
