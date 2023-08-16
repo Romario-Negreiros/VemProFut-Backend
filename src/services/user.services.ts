@@ -22,7 +22,7 @@ class UserServices implements IUserServices {
     LEFT JOIN teams ON user_teams.team_id = teams.id
     WHERE email = ?`;
     const [result] = await app.db.query<User[]>(query, [email]);
-    return result?.[0];
+    return result?.[0].id !== null ? result?.[0] : undefined;
   };
 
   register = async ({ name, email, teams }: RequestBodyUser): Promise<void> => {
@@ -46,7 +46,7 @@ class UserServices implements IUserServices {
     }
   };
 
-  updateTeams = async ({ email, teams }: Omit<RequestBodyUser, "name">, user: User): Promise<void> => {
+  updateTeams = async (teams: string, user: User): Promise<void> => {
     try {
       await app.db.beginTransaction();
 
@@ -75,6 +75,31 @@ class UserServices implements IUserServices {
           );
         }
       }
+      await app.db.commit();
+    } catch (err) {
+      await app.db.rollback();
+      throw err;
+    }
+  };
+
+  delete = async (user: User): Promise<void> => {
+    try {
+      await app.db.beginTransaction();
+
+      await app.db.query("DELETE FROM user_teams WHERE user_id = ?", [user.id]);
+      
+      await app.db.query("DELETE FROM users WHERE email = ?", [user.email]);
+
+      if (user.teams !== undefined) {
+        for (const team of user.teams?.split(",")) {
+          await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
+          await app.db.query(
+            "DELETE FROM teams WHERE team_name = ? AND NOT EXISTS (SELECT 1 FROM user_teams WHERE team_id = @team_id)",
+            [team],
+          );
+        }
+      }
+
       await app.db.commit();
     } catch (err) {
       await app.db.rollback();
