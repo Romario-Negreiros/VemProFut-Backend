@@ -83,13 +83,22 @@ class UserController implements IUserController {
     }
 
     try {
-      await userServices.updateTeams(body);
+      const user = await userServices.getOne(body.email);
+
+      if (user === undefined) {
+        return await res.status(404).send("Usuário não encontrado.");
+      }
+      await userServices.updateTeams(body, user);
 
       await res.status(201).send(`Seus times foram atualizados com sucesso.`);
     } catch (err) {
       console.log(err);
       await res.status(500).send("Erro no processamento interno ao tentar atualizar os times do usuário.");
     }
+  }
+
+  delete = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
+
   }
 }
 
