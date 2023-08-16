@@ -38,6 +38,9 @@ function usersRoutes(app: TFastifyInstance) {
               },
             },
           },
+          400: {
+            type: "string",
+          },
           404: {
             type: "string",
           },
@@ -142,13 +145,16 @@ function usersRoutes(app: TFastifyInstance) {
     `${baseUrl}/delete/:email`,
     {
       schema: {
-        body: {
+        params: {
           email: {
             type: "string",
           },
         },
         response: {
           200: {
+            type: "string",
+          },
+          400: {
             type: "string",
           },
           404: {
