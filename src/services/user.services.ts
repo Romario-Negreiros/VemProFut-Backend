@@ -10,7 +10,7 @@ interface RequestBodyUser {
 
 interface IUserServices {
   getOne: (email: string) => Promise<User | undefined>;
-  register: (user: RequestBodyUser) => Promise<void>;
+  register: (user: RequestBodyUser, verifyEmailToken: string, verifyEmailTokenExpiration: string) => Promise<void>;
 }
 
 class UserServices implements IUserServices {
@@ -25,11 +25,18 @@ class UserServices implements IUserServices {
     return result?.[0].id !== null ? result?.[0] : undefined;
   };
 
-  register = async ({ name, email, teams }: RequestBodyUser): Promise<void> => {
+  register = async (
+    { name, email, teams }: RequestBodyUser,
+    verifyEmailToken: string,
+    verifyEmailTokenExpiration: string,
+  ): Promise<void> => {
     try {
       await app.db.beginTransaction();
 
-      await app.db.query("INSERT INTO users (name, email) VALUES (?, ?)", [name, email]);
+      await app.db.query(
+        "INSERT INTO users (name, email, verify_email_token, verify_email_token_expiration) VALUES (?, ?, ?, ?)",
+        [name, email, verifyEmailToken, verifyEmailTokenExpiration],
+      );
 
       await app.db.query("SET @user_id = LAST_INSERT_ID()");
 
@@ -38,6 +45,18 @@ class UserServices implements IUserServices {
         await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
         await app.db.query("INSERT INTO user_teams (user_id, team_id) VALUES (@user_id, @team_id)");
       }
+
+      
+      await app.mailer.send({
+        to: email,
+        subject: "Verify your email address",
+        templateName: "verify-email",
+        templateVars: {
+          name,
+          email,
+          token: verifyEmailToken
+        }
+      });
 
       await app.db.commit();
     } catch (err) {
@@ -87,7 +106,7 @@ class UserServices implements IUserServices {
       await app.db.beginTransaction();
 
       await app.db.query("DELETE FROM user_teams WHERE user_id = ?", [user.id]);
-      
+
       await app.db.query("DELETE FROM users WHERE email = ?", [user.email]);
 
       if (user.teams !== undefined) {
