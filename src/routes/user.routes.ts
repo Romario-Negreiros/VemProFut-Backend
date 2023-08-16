@@ -151,7 +151,7 @@ function usersRoutes(app: TFastifyInstance) {
           200: {
             type: "string",
           },
-          400: {
+          404: {
             type: "string",
           },
           500: {
