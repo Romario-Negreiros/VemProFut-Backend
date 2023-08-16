@@ -91,11 +91,11 @@ function usersRoutes(app: TFastifyInstance) {
     userController.register,
   );
 
-  app.post(`${baseUrl}/verify-email`, async (req, res) => {
+  // PUT ROUTES
+  app.put(`${baseUrl}/verify-email/:email/:token`, async (req, res) => {
     await res.send({ bull: "shit" });
   });
 
-  // PUT ROUTES
   app.put(`${baseUrl}/update/email`, async (req, res) => {
     await res.send({ bull: "shit" });
   });
