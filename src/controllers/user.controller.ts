@@ -23,27 +23,29 @@ interface RequestBodyUser {
 class UserController implements IUserController {
   getOne = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
     const params = req.params as Params;
-    if (params.email !== undefined) {
-      try {
-        const { email } = params;
-        const user = await userServices.getOne(email);
+    if (params.email === undefined) {
+      return await res.status(400).send("Parâmetro 'email' está vazio.");
+    }
 
-        if (user === undefined) {
-          return await res.status(404).send("Usuário não encontrado.");
-        }
-        
-        await res.status(200).send({ user: { ...user, teams: user.teams?.split(",") } });
-      } catch (err) {
-        console.log(err);
-        await res.status(500).send("Erro no processamento interno ao tentar buscar o usuário.");
+    try {
+      const { email } = params;
+      const user = await userServices.getOne(email);
+
+      if (user === undefined) {
+        return await res.status(404).send("Usuário não encontrado.");
       }
+
+      await res.status(200).send({ user: { ...user, teams: user.teams?.split(",") } });
+    } catch (err) {
+      console.log(err);
+      await res.status(500).send("Erro no processamento interno ao tentar buscar o usuário.");
     }
   };
 
   register = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
     const body = req.body as RequestBodyUser;
     if (body.name === undefined || body.name === null) {
-       return await res.status(400).send("O campo 'nome' está faltando na requisição.");
+      return await res.status(400).send("O campo 'nome' está faltando na requisição.");
     }
 
     if (body.email === undefined || body.email === null) {
@@ -69,7 +71,7 @@ class UserController implements IUserController {
   };
 
   updateTeams = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
-    const body = req.body as Omit<RequestBodyUser, 'name'>;
+    const body = req.body as Omit<RequestBodyUser, "name">;
     if (body.email === undefined || body.email === null) {
       return await res.status(400).send("O campo 'email' está faltando na requisição.");
     }
@@ -88,18 +90,37 @@ class UserController implements IUserController {
       if (user === undefined) {
         return await res.status(404).send("Usuário não encontrado.");
       }
-      await userServices.updateTeams(body, user);
+
+      await userServices.updateTeams(body.teams, user);
 
       await res.status(201).send(`Seus times foram atualizados com sucesso.`);
     } catch (err) {
       console.log(err);
       await res.status(500).send("Erro no processamento interno ao tentar atualizar os times do usuário.");
     }
-  }
+  };
 
   delete = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
+    const params = req.params as Params;
+    if (params.email === undefined) {
+      return await res.status(400).send("Parâmetro 'email' está vazio.");
+    }
 
-  }
+    try {
+      const user = await userServices.getOne(params.email);
+
+      if (user === undefined) {
+        return await res.status(404).send("Usuário não encontrado.");
+      }
+
+      await userServices.delete(user);
+
+      await res.status(200).send("Usuário deletado com sucesso.");
+    } catch (err) {
+      console.log(err);
+      await res.status(500).send("Erro no processamento interno ao tentar deletar o usuário.");
+    }
+  };
 }
 
 export default new UserController();
