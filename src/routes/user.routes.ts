@@ -97,43 +97,80 @@ function usersRoutes(app: TFastifyInstance) {
     await res.send({ bull: "shit" });
   });
 
-  app.put(`${baseUrl}/update/teams`, {
-    schema: {
-      body: {
-        email: {
-          type: "string",
+  app.put(
+    `${baseUrl}/update/teams`,
+    {
+      schema: {
+        body: {
+          email: {
+            type: "string",
+          },
+          teams: {
+            type: "string",
+          },
         },
-        teams: {
-          type: "string"
-        }
-      },
-      response: {
-        200: {
-          type: "string",
+        response: {
+          200: {
+            type: "string",
+          },
+          400: {
+            type: "string",
+          },
+          404: {
+            type: "string",
+          },
+          500: {
+            type: "string",
+          },
         },
-        400: {
-          type: "string",
+        headers: {
+          type: "object",
+          properties: {
+            "Content-Type": {
+              type: "string",
+            },
+          },
+          required: ["Content-Type"],
         },
-        500: {
-          type: "string",
-        },
-      },
-      headers: {
-        type: "object",
-        properties: {
-          "Content-Type": {
-            type: "string"
-          }
-        },
-        required: ["Content-Type"],
       },
     },
-  }, userController.updateTeams);
+    userController.updateTeams,
+  );
 
   // DELETE ROUTES
-  app.delete(`${baseUrl}/delete/:email`, async (req, res) => {
-    await res.send({ bull: "shit" });
-  });
+  app.delete(
+    `${baseUrl}/delete/:email`,
+    {
+      schema: {
+        body: {
+          email: {
+            type: "string",
+          },
+        },
+        response: {
+          200: {
+            type: "string",
+          },
+          400: {
+            type: "string",
+          },
+          500: {
+            type: "string",
+          },
+        },
+        headers: {
+          type: "object",
+          properties: {
+            "Content-Type": {
+              type: "string",
+            },
+          },
+          required: ["Content-Type"],
+        },
+      },
+    },
+    userController.delete,
+  );
 }
 
 export default usersRoutes;
