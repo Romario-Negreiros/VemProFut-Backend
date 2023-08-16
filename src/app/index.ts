@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import userRoutes from "../routes/user.routes";
 import createDatabaseConnection from "./db";
+import mailer from "./mailer";
 
 import type { Connection } from "mysql2/promise";
 
@@ -12,10 +13,12 @@ interface IApp {
 class App implements IApp {
   fastify: ReturnType<typeof Fastify>;
   db!: Connection;
+  mailer: typeof mailer;
 
   constructor() {
     this.fastify = Fastify();
-
+    this.mailer = mailer;
+  
     this.setRoutes();
     void this.setDatabase();
     this.runServer();
