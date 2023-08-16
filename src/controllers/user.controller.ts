@@ -54,6 +54,10 @@ class UserController implements IUserController {
       return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
     }
 
+    if (body.teams.split(",").length > 3) {
+      return await res.status(400).send("Você só pode acompanhar até três times!");
+    }
+
     try {
       await userServices.register(body);
 
@@ -72,6 +76,10 @@ class UserController implements IUserController {
 
     if (body.teams === undefined || body.teams === null || body.teams.length === 0) {
       return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
+    }
+
+    if (body.teams.split(",").length > 3) {
+      return await res.status(400).send("Você só pode acompanhar até três times!");
     }
 
     try {
