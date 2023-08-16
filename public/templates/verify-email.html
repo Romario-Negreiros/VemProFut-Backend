@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<head>
+  <title>Verify Email</title>
+</head>
+<style>
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    color: #000;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    line-height: 24px;
+  }
+
+  h1 {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  p {
+    font-size: 16px;
+  }
+
+  a {
+    display: block;
+    padding: 10px 0;
+    background-color: #3200fa;
+    color: #fff;
+    text-align: center;
+  }
+</style>
+
+<body>
+  <h1>
+    Eai, <%= name %>
+  </h1>
+  <br />
+  <p>
+    Estamos muito ansiosos para te atualizar sobre seu time do coração! Verifique este endereço de email (<%= email %>)
+    para completar seu registro.
+  </p>
+  <p>
+    <a href="https://localhost:5000/api/users/verify-email/<%= email %>/<%= token %>">VERIFICAR</a>
+  </p>
+</body>
+
+</html>
