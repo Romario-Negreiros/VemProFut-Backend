@@ -9,12 +9,12 @@ interface RequestBodyUser {
 }
 
 interface IUserServices {
-  getOne: (email: string) => Promise<User>;
+  getOne: (email: string) => Promise<User | undefined>;
   register: (user: RequestBodyUser) => Promise<void>;
 }
 
 class UserServices implements IUserServices {
-  getOne = async (email: string): Promise<User> => {
+  getOne = async (email: string): Promise<User | undefined> => {
     const query = `
     SELECT users.*, GROUP_CONCAT(teams.team_name) AS teams
     FROM users
@@ -46,11 +46,9 @@ class UserServices implements IUserServices {
     }
   };
 
-  updateTeams = async ({ email, teams }: Omit<RequestBodyUser, "name">): Promise<void> => {
+  updateTeams = async ({ email, teams }: Omit<RequestBodyUser, "name">, user: User): Promise<void> => {
     try {
       await app.db.beginTransaction();
-
-      const user = await this.getOne(email);
 
       for (const team of teams.split(",")) {
         if (user.teams !== undefined && !user.teams?.split(",").includes(team)) {
