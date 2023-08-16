@@ -1,4 +1,5 @@
 import userServices from "../services/user.services";
+import crypto from "crypto";
 
 import type { FastifyRequest, FastifyReply } from "fastify";
 
@@ -61,7 +62,11 @@ class UserController implements IUserController {
     }
 
     try {
-      await userServices.register(body);
+      const verifyEmailToken = crypto.randomBytes(10).toString('hex');
+      const verifyEmailTokenExpiration = new Date();
+      verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
+
+      await userServices.register(body, verifyEmailToken, verifyEmailTokenExpiration.toISOString());
 
       await res.status(201).send(`Você foi registrado com sucesso, ${body.name}.`);
     } catch (err) {
