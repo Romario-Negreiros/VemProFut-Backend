@@ -46,7 +46,6 @@ class UserServices implements IUserServices {
         await app.db.query("INSERT INTO user_teams (user_id, team_id) VALUES (@user_id, @team_id)");
       }
 
-      
       await app.mailer.send({
         to: email,
         subject: "Verify your email address",
@@ -54,8 +53,8 @@ class UserServices implements IUserServices {
         templateVars: {
           name,
           email,
-          token: verifyEmailToken
-        }
+          token: verifyEmailToken,
+        },
       });
 
       await app.db.commit();
@@ -63,6 +62,13 @@ class UserServices implements IUserServices {
       await app.db.rollback();
       throw err;
     }
+  };
+
+  verifyEmail = async (email: string, token: string): Promise<void> => {
+    await app.db.query(
+      "UPDATE users SET verify_email_token = ?, verify_email_token_expiration = ?, is_active = ? WHERE verify_email_token = ? and email = ?",
+      [null, null, true, token, email],
+    );
   };
 
   updateTeams = async (teams: string, user: User): Promise<void> => {
