@@ -1,7 +1,8 @@
 import userServices from "../../services/user.services";
 import crypto from "crypto";
 
-import type { Controller, IUserController, IParams, IBody } from "./types"; 
+import type { Controller, IUserController, IParams, IBody } from "./types";
+import type { QueryError } from "mysql2";
 
 // req = request
 // res = response
@@ -59,6 +60,11 @@ class UserController implements IUserController {
         );
     } catch (err) {
       console.log(err);
+      const error = err as QueryError;
+      if (error.errno === 1062) {
+        return await res.status(400).send("O usuário já está registrado.")
+      }
+
       await res.status(500).send("Erro no processamento interno ao tentar registrar o usuário.");
     }
   };
