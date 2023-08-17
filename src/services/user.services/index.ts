@@ -15,12 +15,7 @@ class UserServices implements IUserServices {
     return result?.[0].id !== null ? result?.[0] : undefined;
   };
 
-  register: IUserServices["register"] = async (
-    name,
-    email,
-    teams,
-    verifyEmailToken,
-    verifyEmailTokenExpiration) => {
+  register: IUserServices["register"] = async (name, email, teams, verifyEmailToken, verifyEmailTokenExpiration) => {
     try {
       await app.db.beginTransaction();
 

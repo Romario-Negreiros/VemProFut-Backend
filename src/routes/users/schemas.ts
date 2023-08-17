@@ -151,7 +151,7 @@ const schemas = {
         type: "string",
       },
     },
-  }
+  },
 };
 
 export default schemas;

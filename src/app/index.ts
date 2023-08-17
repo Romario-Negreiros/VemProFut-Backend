@@ -18,7 +18,7 @@ class App implements IApp {
   constructor() {
     this.fastify = Fastify();
     this.mailer = mailer;
-  
+
     this.setRoutes();
     void this.setDatabase();
     this.runServer();

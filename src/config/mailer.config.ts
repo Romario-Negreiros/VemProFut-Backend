@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config();  
+dotenv.config();
 
 export default {
   host: "smtp.zoho.com",

@@ -62,7 +62,7 @@ class UserController implements IUserController {
       console.log(err);
       const error = err as QueryError;
       if (error.errno === 1062) {
-        return await res.status(400).send("O usuário já está registrado.")
+        return await res.status(400).send("O usuário já está registrado.");
       }
 
       await res.status(500).send("Erro no processamento interno ao tentar registrar o usuário.");
