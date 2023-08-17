@@ -1,20 +1,10 @@
-import app from "../app";
+import app from "../../app";
 
-import type User from "../models/user.model";
-
-interface RequestBodyUser {
-  name: string;
-  email: string;
-  teams: string;
-}
-
-interface IUserServices {
-  getOne: (email: string) => Promise<User | undefined>;
-  register: (user: RequestBodyUser, verifyEmailToken: string, verifyEmailTokenExpiration: string) => Promise<void>;
-}
+import type User from "../../models/user.model";
+import type { IUserServices } from "./types";
 
 class UserServices implements IUserServices {
-  getOne = async (email: string): Promise<User | undefined> => {
+  getOne: IUserServices["getOne"] = async (email) => {
     const query = `
     SELECT users.*, GROUP_CONCAT(teams.team_name) AS teams
     FROM users
@@ -25,11 +15,12 @@ class UserServices implements IUserServices {
     return result?.[0].id !== null ? result?.[0] : undefined;
   };
 
-  register = async (
-    { name, email, teams }: RequestBodyUser,
-    verifyEmailToken: string,
-    verifyEmailTokenExpiration: string,
-  ): Promise<void> => {
+  register: IUserServices["register"] = async (
+    name,
+    email,
+    teams,
+    verifyEmailToken,
+    verifyEmailTokenExpiration) => {
     try {
       await app.db.beginTransaction();
 
@@ -64,14 +55,14 @@ class UserServices implements IUserServices {
     }
   };
 
-  verifyEmail = async (email: string, token: string): Promise<void> => {
+  verifyEmail: IUserServices["verifyEmail"] = async (email, token) => {
     await app.db.query(
       "UPDATE users SET verify_email_token = ?, verify_email_token_expiration = ?, is_active = ? WHERE verify_email_token = ? and email = ?",
       [null, null, true, token, email],
     );
   };
 
-  updateTeams = async (teams: string, user: User): Promise<void> => {
+  updateTeams: IUserServices["updateTeams"] = async (teams, user) => {
     try {
       await app.db.beginTransaction();
 
@@ -107,7 +98,7 @@ class UserServices implements IUserServices {
     }
   };
 
-  delete = async (user: User): Promise<void> => {
+  delete: IUserServices["delete"] = async (user) => {
     try {
       await app.db.beginTransaction();
 
