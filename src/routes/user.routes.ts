@@ -92,46 +92,46 @@ function usersRoutes(app: TFastifyInstance) {
   );
 
   // PUT ROUTES
-  app.put(`${baseUrl}/verify-email/:email/:token`, {
-    schema: {
-      params: {
-        email: {
-          type: "string",
-        },
-        token: {
-          type: "string",
-        },
-      },
-      response: {
-        200: {
-          type: "object",
-          properties: {
-            user: {
-              id: { type: "number" },
-              name: { type: "string" },
-              email: { type: "string" },
-              teams: { type: "array" },
-              created_at: { type: "string" },
-              is_active: { type: "number" },
-            },
+  app.put(
+    `${baseUrl}/verify-email/:email/:token`,
+    {
+      schema: {
+        params: {
+          email: {
+            type: "string",
+          },
+          token: {
+            type: "string",
           },
         },
-        400: {
-          type: "string",
-        },
-        404: {
-          type: "string",
-        },
-        500: {
-          type: "string",
+        response: {
+          200: {
+            type: "object",
+            properties: {
+              user: {
+                id: { type: "number" },
+                name: { type: "string" },
+                email: { type: "string" },
+                teams: { type: "array" },
+                created_at: { type: "string" },
+                is_active: { type: "number" },
+              },
+            },
+          },
+          400: {
+            type: "string",
+          },
+          404: {
+            type: "string",
+          },
+          500: {
+            type: "string",
+          },
         },
       },
     },
-  }, userController.verifyEmail);
-
-  app.put(`${baseUrl}/update/email`, async (req, res) => {
-    await res.send({ bull: "shit" });
-  });
+    userController.verifyEmail,
+  );
 
   app.put(
     `${baseUrl}/update/teams`,
@@ -144,6 +144,15 @@ function usersRoutes(app: TFastifyInstance) {
           teams: {
             type: "string",
           },
+        },
+        headers: {
+          type: "object",
+          properties: {
+            "Content-Type": {
+              type: "string",
+            },
+          },
+          required: ["Content-Type"],
         },
         response: {
           200: {
@@ -158,15 +167,6 @@ function usersRoutes(app: TFastifyInstance) {
           500: {
             type: "string",
           },
-        },
-        headers: {
-          type: "object",
-          properties: {
-            "Content-Type": {
-              type: "string",
-            },
-          },
-          required: ["Content-Type"],
         },
       },
     },
