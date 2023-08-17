@@ -1,36 +1,19 @@
-import userServices from "../services/user.services";
+import userServices from "../../services/user.services";
 import crypto from "crypto";
 
-import type { FastifyRequest, FastifyReply } from "fastify";
+import type { Controller, IUserController, IParams, IBody } from "./types"; 
 
 // req = request
 // res = response
 
-interface IUserController {
-  getOne: (req: FastifyRequest, res: FastifyReply) => Promise<void>;
-  register: (req: FastifyRequest, res: FastifyReply) => Promise<void>;
-}
-
-interface Params {
-  email?: string;
-  token?: string;
-}
-
-interface RequestBodyUser {
-  name: string;
-  email: string;
-  teams: string;
-}
-
 class UserController implements IUserController {
-  getOne = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
-    const params = req.params as Params;
-    if (params.email === undefined) {
+  getOne: Controller = async (req, res) => {
+    const { email } = req.params as IParams["getOne"];
+    if (email === undefined) {
       return await res.status(400).send("Parâmetro 'email' está vazio.");
     }
 
     try {
-      const { email } = params;
       const user = await userServices.getOne(email);
 
       if (user === undefined) {
@@ -44,21 +27,21 @@ class UserController implements IUserController {
     }
   };
 
-  register = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
-    const body = req.body as RequestBodyUser;
-    if (body.name === undefined || body.name === null) {
+  register: Controller = async (req, res) => {
+    const { name, email, teams } = req.body as IBody["register"];
+    if (name === undefined || name === null) {
       return await res.status(400).send("O campo 'nome' está faltando na requisição.");
     }
 
-    if (body.email === undefined || body.email === null) {
+    if (email === undefined || email === null) {
       return await res.status(400).send("O campo 'email' está faltando na requisição.");
     }
 
-    if (body.teams === undefined || body.teams === null || body.teams.length === 0) {
+    if (teams === undefined || teams === null || teams.length === 0) {
       return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
     }
 
-    if (body.teams.split(",").length > 3) {
+    if (teams.split(",").length > 3) {
       return await res.status(400).send("Você só pode acompanhar até três times!");
     }
 
@@ -67,12 +50,12 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
-      await userServices.register(body, verifyEmailToken, verifyEmailTokenExpiration.toISOString());
+      await userServices.register(name, email, teams, verifyEmailToken, verifyEmailTokenExpiration.toISOString());
 
       await res
         .status(201)
         .send(
-          `Você foi registrado com sucesso, ${body.name}. Verifique seu email para começar a receber as notificações semanais.`,
+          `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
         );
     } catch (err) {
       console.log(err);
@@ -80,18 +63,18 @@ class UserController implements IUserController {
     }
   };
 
-  verifyEmail = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
-    const params = req.params as Params;
-    if (params.email === undefined) {
+  verifyEmail: Controller = async (req, res) => {
+    const { email, token } = req.params as IParams["verifyEmail"];
+    if (email === undefined) {
       return await res.status(400).send("Parâmetro 'email' está vazio.");
     }
 
-    if (params.token === undefined) {
+    if (token === undefined) {
       return await res.status(400).send("Parâmetro 'token' está vazio.");
     }
 
     try {
-      const user = await userServices.getOne(params.email);
+      const user = await userServices.getOne(email);
 
       if (user === undefined) {
         return await res.status(404).send("Usuário não encontrado.");
@@ -110,11 +93,11 @@ class UserController implements IUserController {
         return await res.status(400).send("O token de validação de email expirou, crie sua conta novamente.");
       }
 
-      if (params.token !== user.verify_email_token) {
+      if (token !== user.verify_email_token) {
         return await res.status(400).send("Token inválido.");
       }
 
-      await userServices.verifyEmail(params.email, params.token);
+      await userServices.verifyEmail(email, token);
 
       user.is_active = 1;
       delete user.verify_email_token;
@@ -127,28 +110,28 @@ class UserController implements IUserController {
     }
   };
 
-  updateTeams = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
-    const body = req.body as Omit<RequestBodyUser, "name">;
-    if (body.email === undefined || body.email === null) {
+  updateTeams: Controller = async (req, res) => {
+    const { email, teams } = req.body as IBody["updateTeams"];
+    if (email === undefined || email === null) {
       return await res.status(400).send("O campo 'email' está faltando na requisição.");
     }
 
-    if (body.teams === undefined || body.teams === null || body.teams.length === 0) {
+    if (teams === undefined || teams === null || teams.length === 0) {
       return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
     }
 
-    if (body.teams.split(",").length > 3) {
+    if (teams.split(",").length > 3) {
       return await res.status(400).send("Você só pode acompanhar até três times!");
     }
 
     try {
-      const user = await userServices.getOne(body.email);
+      const user = await userServices.getOne(email);
 
       if (user === undefined) {
         return await res.status(404).send("Usuário não encontrado.");
       }
 
-      await userServices.updateTeams(body.teams, user);
+      await userServices.updateTeams(teams, user);
 
       await res.status(201).send(`Seus times foram atualizados com sucesso.`);
     } catch (err) {
@@ -157,14 +140,14 @@ class UserController implements IUserController {
     }
   };
 
-  delete = async (req: FastifyRequest, res: FastifyReply): Promise<void> => {
-    const params = req.params as Params;
-    if (params.email === undefined) {
+  delete: Controller = async (req, res) => {
+    const { email } = req.params as IParams["delete"];
+    if (email === undefined) {
       return await res.status(400).send("Parâmetro 'email' está vazio.");
     }
 
     try {
-      const user = await userServices.getOne(params.email);
+      const user = await userServices.getOne(email);
 
       if (user === undefined) {
         return await res.status(404).send("Usuário não encontrado.");
