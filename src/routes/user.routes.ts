@@ -92,9 +92,42 @@ function usersRoutes(app: TFastifyInstance) {
   );
 
   // PUT ROUTES
-  app.put(`${baseUrl}/verify-email/:email/:token`, async (req, res) => {
-    await res.send({ bull: "shit" });
-  });
+  app.put(`${baseUrl}/verify-email/:email/:token`, {
+    schema: {
+      params: {
+        email: {
+          type: "string",
+        },
+        token: {
+          type: "string",
+        },
+      },
+      response: {
+        200: {
+          type: "object",
+          properties: {
+            user: {
+              id: { type: "number" },
+              name: { type: "string" },
+              email: { type: "string" },
+              teams: { type: "array" },
+              created_at: { type: "string" },
+              is_active: { type: "number" },
+            },
+          },
+        },
+        400: {
+          type: "string",
+        },
+        404: {
+          type: "string",
+        },
+        500: {
+          type: "string",
+        },
+      },
+    },
+  }, userController.verifyEmail);
 
   app.put(`${baseUrl}/update/email`, async (req, res) => {
     await res.send({ bull: "shit" });
