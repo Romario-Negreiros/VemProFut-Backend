@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import userRoutes from "../routes/user.routes";
+import userRoutes from "../routes/users";
 import createDatabaseConnection from "./db";
 import mailer from "./mailer";
 
