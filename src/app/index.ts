@@ -2,6 +2,7 @@ import Fastify from "fastify";
 import userRoutes from "../routes/users";
 import createDatabaseConnection from "./db";
 import mailer from "./mailer";
+import cors from "@fastify/cors";
 
 import type { Connection } from "mysql2/promise";
 
@@ -20,6 +21,7 @@ class App implements IApp {
     this.mailer = mailer;
 
     this.setRoutes();
+    this.setMiddlewares();
     void this.setDatabase();
     this.runServer();
   }
@@ -37,6 +39,12 @@ class App implements IApp {
   private readonly setRoutes = () => {
     userRoutes(this.fastify);
   };
+
+  private readonly setMiddlewares = () => {
+    void this.fastify.register(cors, {
+      origin: "http://localhost:3333"
+    })
+  }
 
   private readonly runServer = () => {
     this.fastify.listen({ port: 5000 }, (err) => {
