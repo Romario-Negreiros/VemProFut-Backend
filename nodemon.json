@@ -1,6 +1,7 @@
 {
   "watch": ["src"],
   "ext": "ts,json",
+  "delay": "5000",
   "execMap": {
     "ts": "node -r sucrase/register"
   }
