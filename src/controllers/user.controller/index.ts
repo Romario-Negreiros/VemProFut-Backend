@@ -86,12 +86,12 @@ class UserController implements IUserController {
         return await res.status(404).send("Usuário não encontrado.");
       }
 
-      if (user.verify_email_token === undefined || user.verify_email_token_expiration === undefined) {
+      if (user.verify_email_token === null || user.verify_email_token_expiration === null) {
         return await res.status(400).send("Usuário com o email já verificado.");
       }
 
       const now = new Date();
-      const tokenExpiration = new Date(user.verify_email_token_expiration);
+      const tokenExpiration = new Date(user.verify_email_token_expiration as string);
 
       if (now > tokenExpiration) {
         await userServices.delete(user);
