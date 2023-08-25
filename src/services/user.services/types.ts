@@ -3,11 +3,11 @@ import type User from "../../models/user.model";
 type TGetOne = (email: string) => Promise<any | undefined>;
 
 type TRegister = (
-  name: string,
-  email: string,
-  teams: string,
   verifyEmailToken: string,
   verifyEmailTokenExpiration: string,
+  name: string,
+  email: string,
+  teams?: string,
 ) => Promise<void>;
 
 type TVerifyEmail = (email: string, token: string) => Promise<void>;
