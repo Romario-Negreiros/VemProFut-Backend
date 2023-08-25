@@ -24,5 +24,7 @@ export interface IBody {
     email?: string;
     teams?: string;
   };
-  updateTeams: IBody["register"];
+  updateTeams: {
+    newTeams?: string;
+  } & Omit<IBody["register"], "teams">;
 }
