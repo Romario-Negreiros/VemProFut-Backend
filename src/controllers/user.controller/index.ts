@@ -38,11 +38,7 @@ class UserController implements IUserController {
       return await res.status(400).send("O campo 'email' está faltando na requisição.");
     }
 
-    if (teams === undefined || teams === null || teams.length === 0) {
-      return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
-    }
-
-    if (teams.split(",").length > 3) {
+    if (teams !== undefined && teams?.split(",").length > 3) {
       return await res.status(400).send("Você só pode acompanhar até três times!");
     }
 
@@ -51,7 +47,7 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
-      await userServices.register(name, email, teams, verifyEmailToken, verifyEmailTokenExpiration.toISOString());
+      await userServices.register(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, teams);
 
       await res
         .status(201)
