@@ -14,28 +14,28 @@ class UserServices implements IUserServices {
     LEFT JOIN Teams ON Users_Teams.teamId = Teams.id 
     WHERE email = ? GROUP BY Users.id`;
     const [result] = await app.db.query<User[]>(query, [email]);
-    if (result?.[0].id === null) {
-      return undefined
+    if (result?.[0] === undefined) {
+      return undefined;
     } else {
-      const user = result?.[0]
+      const user = result?.[0];
       if (user.teams !== undefined && user.teams !== null) {
-        const teams = []
+        const teams = [];
         for (const teamId of user.teams?.split(",")) {
           const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
-          const team = teamQueryRes?.[0]
-          if (team === undefined) continue
-          const [venueQueryRes] = await app.db.query<Venue[]>("SELECT * FROM Venues where id = ?", [team.venueId])
-          const venue = venueQueryRes?.[0]
+          const team = teamQueryRes?.[0];
+          if (team === undefined) continue;
+          const [venueQueryRes] = await app.db.query<Venue[]>("SELECT * FROM Venues where id = ?", [team.venueId]);
+          const venue = venueQueryRes?.[0];
           delete team.venueId;
           if (venue === undefined) {
-            teams.push({ ...team, venue: null })
+            teams.push({ ...team, venue: null });
           } else {
             teams.push({ ...team, venue });
           }
         }
-        return { ...user, teams: [...teams] }        
+        return { ...user, teams: [...teams] };
       } else {
-        return { ...user, teams: null }
+        return { ...user, teams: null };
       }
     }
   };
@@ -56,7 +56,7 @@ class UserServices implements IUserServices {
           await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (@userId, ?)", [+team]);
         }
       }
-        
+
       await app.mailer.send({
         to: email,
         subject: "Verify your email address",
@@ -82,33 +82,35 @@ class UserServices implements IUserServices {
     );
   };
 
-  updateTeams: IUserServices["updateTeams"] = async (teams, user) => {
+  updateTeams: IUserServices["updateTeams"] = async (newTeamsIds, user) => {
     try {
       await app.db.beginTransaction();
 
-      for (const team of teams.split(",")) {
-        if (user.teams !== undefined && !user.teams?.split(",").includes(team)) {
-          await app.db.query("INSERT IGNORE INTO teams (team_name) VALUES (?)", [team]);
-          await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
-          await app.db.query("INSERT INTO user_teams (user_id, team_id) VALUES (?, @team_id)", [user.id]);
+      if (newTeamsIds === "") {
+        await app.db.query("DELETE FROM Users_Teams WHERE userId = ?", [user.id]);
+      } else if (user.teams !== undefined && user.teams !== null) {
+        const userTeams = user.teams as unknown as Team[];
+        for (const newTeamId of newTeamsIds.split(",")) {
+          if (!userTeams.some((userTeam) => userTeam.id === +newTeamId)) {
+            await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (?, ?)", [user.id, +newTeamId]);
+          }
         }
-      }
 
-      const teamsToRemove = user.teams?.split(",").filter((team) => {
-        if (!teams.split(",").includes(team)) {
-          return team;
+        const teamsToRemove: number[] = [];
+        userTeams.forEach((userTeam) => {
+          if (!newTeamsIds.split(",").includes(String(userTeam.id))) {
+            teamsToRemove.push(userTeam.id as number);
+          }
+        });
+
+        if (teamsToRemove !== undefined && teamsToRemove.length > 0) {
+          for (const team of teamsToRemove) {
+            await app.db.query("DELETE FROM Users_Teams WHERE userId = ? AND teamId = ?", [user.id, team]);
+          }
         }
-        return null;
-      });
-
-      if (teamsToRemove !== undefined && teamsToRemove.length > 0) {
-        for (const team of teamsToRemove) {
-          await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
-          await app.db.query("DELETE FROM user_teams WHERE user_id = ? AND team_id = @team_id", [user.id]);
-          await app.db.query(
-            "DELETE FROM teams WHERE team_name = ? AND NOT EXISTS (SELECT 1 FROM user_teams WHERE team_id = @team_id)",
-            [team],
-          );
+      } else {
+        for (const newTeamId of newTeamsIds.split(",")) {
+          await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (?, ?)", [user.id, +newTeamId]);
         }
       }
       await app.db.commit();
