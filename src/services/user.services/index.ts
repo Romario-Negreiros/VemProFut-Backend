@@ -18,7 +18,7 @@ class UserServices implements IUserServices {
       return undefined
     } else {
       const user = result?.[0]
-      if (user.teams !== undefined) {
+      if (user.teams !== undefined && user.teams !== null) {
         const teams = []
         for (const teamId of user.teams?.split(",")) {
           const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
@@ -34,27 +34,29 @@ class UserServices implements IUserServices {
           }
         }
         return { ...user, teams: [...teams] }        
+      } else {
+        return { ...user, teams: null }
       }
     }
   };
 
-  register: IUserServices["register"] = async (name, email, teams, verifyEmailToken, verifyEmailTokenExpiration) => {
+  register: IUserServices["register"] = async (verifyEmailToken, verifyEmailTokenExpiration, name, email, teams) => {
     try {
       await app.db.beginTransaction();
 
       await app.db.query(
-        "INSERT INTO Users (name, email, verify_email_token, verify_email_token_expiration) VALUES (?, ?, ?, ?)",
+        "INSERT INTO Users (name, email, verifyEmailToken, verifyEmailTokenExpiration) VALUES (?, ?, ?, ?)",
         [name, email, verifyEmailToken, verifyEmailTokenExpiration],
       );
 
-      await app.db.query("SET @user_id = LAST_INSERT_ID()");
+      await app.db.query("SET @userId = LAST_INSERT_ID()");
 
-      for (const team of teams.split(",")) {
-        await app.db.query("INSERT INTO Users_Teams", [team]);
-        await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
-        await app.db.query("INSERT INTO user_teams (user_id, team_id) VALUES (@user_id, @team_id)");
+      if (teams !== undefined) {
+        for (const team of teams.split(",")) {
+          await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (@userId, ?)", [+team]);
+        }
       }
-
+        
       await app.mailer.send({
         to: email,
         subject: "Verify your email address",
