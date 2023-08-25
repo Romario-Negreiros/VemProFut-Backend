@@ -8,11 +8,11 @@ import type { IUserServices } from "./types";
 class UserServices implements IUserServices {
   getOne: IUserServices["getOne"] = async (email) => {
     const query = `
-    SELECT users.*, GROUP_CONCAT(teams.id) AS teams 
-    FROM users 
-    LEFT JOIN Users_Teams ON users.id = Users_Teams.userId 
-    LEFT JOIN teams ON Users_Teams.teamId = teams.id 
-    WHERE email = ? GROUP BY users.id`;
+    SELECT Users.*, GROUP_CONCAT(Teams.id) AS teams 
+    FROM Users 
+    LEFT JOIN Users_Teams ON Users.id = Users_Teams.userId 
+    LEFT JOIN Teams ON Users_Teams.teamId = Teams.id 
+    WHERE email = ? GROUP BY Users.id`;
     const [result] = await app.db.query<User[]>(query, [email]);
     if (result?.[0].id === null) {
       return undefined
@@ -43,14 +43,14 @@ class UserServices implements IUserServices {
       await app.db.beginTransaction();
 
       await app.db.query(
-        "INSERT INTO users (name, email, verify_email_token, verify_email_token_expiration) VALUES (?, ?, ?, ?)",
+        "INSERT INTO Users (name, email, verify_email_token, verify_email_token_expiration) VALUES (?, ?, ?, ?)",
         [name, email, verifyEmailToken, verifyEmailTokenExpiration],
       );
 
       await app.db.query("SET @user_id = LAST_INSERT_ID()");
 
       for (const team of teams.split(",")) {
-        await app.db.query("INSERT IGNORE INTO teams (team_name) VALUES (?)", [team]);
+        await app.db.query("INSERT INTO Users_Teams", [team]);
         await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
         await app.db.query("INSERT INTO user_teams (user_id, team_id) VALUES (@user_id, @team_id)");
       }
