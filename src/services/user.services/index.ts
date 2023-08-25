@@ -23,10 +23,15 @@ class UserServices implements IUserServices {
         for (const teamId of user.teams?.split(",")) {
           const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
           const team = teamQueryRes?.[0]
+          if (team === undefined) continue
           const [venueQueryRes] = await app.db.query<Venue[]>("SELECT * FROM Venues where id = ?", [team.venueId])
           const venue = venueQueryRes?.[0]
           delete team.venueId;
-          teams.push({ ...team, venue });
+          if (venue === undefined) {
+            teams.push({ ...team, venue: null })
+          } else {
+            teams.push({ ...team, venue });
+          }
         }
         return { ...user, teams: [...teams] }        
       }
