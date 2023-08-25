@@ -122,19 +122,11 @@ class UserServices implements IUserServices {
     try {
       await app.db.beginTransaction();
 
-      await app.db.query("DELETE FROM user_teams WHERE user_id = ?", [user.id]);
-
-      await app.db.query("DELETE FROM users WHERE email = ?", [user.email]);
-
-      if (user.teams !== undefined) {
-        for (const team of user.teams?.split(",")) {
-          await app.db.query("SET @team_id = (SELECT id FROM teams WHERE team_name = ?)", [team]);
-          await app.db.query(
-            "DELETE FROM teams WHERE team_name = ? AND NOT EXISTS (SELECT 1 FROM user_teams WHERE team_id = @team_id)",
-            [team],
-          );
-        }
+      if (user.teams !== null) {
+        await app.db.query("DELETE FROM Users_Teams WHERE userId = ?", [user.id]);
       }
+
+      await app.db.query("DELETE FROM Users WHERE email = ?", [user.email]);
 
       await app.db.commit();
     } catch (err) {
