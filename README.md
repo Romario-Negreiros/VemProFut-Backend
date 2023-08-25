@@ -1,5 +1,5 @@
 <p align="center">
-    <h2 align="center" >VemProFut</h2>
+    <h2 align="center">VemProFut</h2>
 </p>
 
 Back end of VemProFut's project, still under construction...
