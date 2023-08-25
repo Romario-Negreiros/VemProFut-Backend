@@ -1,6 +1,6 @@
 import type User from "../../models/user.model";
 
-type TGetOne = (email: string) => Promise<User | undefined>;
+type TGetOne = (email: string) => Promise<any | undefined>;
 
 type TRegister = (
   name: string,

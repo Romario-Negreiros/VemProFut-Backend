@@ -1,18 +1,36 @@
 import app from "../../app";
 
+import type Team from "../../models/team.model";
 import type User from "../../models/user.model";
+import type Venue from "../../models/venue.model";
 import type { IUserServices } from "./types";
 
 class UserServices implements IUserServices {
   getOne: IUserServices["getOne"] = async (email) => {
     const query = `
-    SELECT users.*, GROUP_CONCAT(teams.team_name) AS teams
-    FROM users
-    LEFT JOIN user_teams ON users.id = user_teams.user_id
-    LEFT JOIN teams ON user_teams.team_id = teams.id
-    WHERE email = ?`;
+    SELECT users.*, GROUP_CONCAT(teams.id) AS teams 
+    FROM users 
+    LEFT JOIN Users_Teams ON users.id = Users_Teams.userId 
+    LEFT JOIN teams ON Users_Teams.teamId = teams.id 
+    WHERE email = ? GROUP BY users.id`;
     const [result] = await app.db.query<User[]>(query, [email]);
-    return result?.[0].id !== null ? result?.[0] : undefined;
+    if (result?.[0].id === null) {
+      return undefined
+    } else {
+      const user = result?.[0]
+      if (user.teams !== undefined) {
+        const teams = []
+        for (const teamId of user.teams?.split(",")) {
+          const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
+          const team = teamQueryRes?.[0]
+          const [venueQueryRes] = await app.db.query<Venue[]>("SELECT * FROM Venues where id = ?", [team.venueId])
+          const venue = venueQueryRes?.[0]
+          delete team.venueId;
+          teams.push({ ...team, venue });
+        }
+        return { ...user, teams: [...teams] }        
+      }
+    }
   };
 
   register: IUserServices["register"] = async (name, email, teams, verifyEmailToken, verifyEmailTokenExpiration) => {
