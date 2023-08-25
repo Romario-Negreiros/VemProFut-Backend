@@ -113,16 +113,16 @@ class UserController implements IUserController {
   };
 
   updateTeams: Controller = async (req, res) => {
-    const { email, teams } = req.body as IBody["updateTeams"];
+    const { email, newTeams } = req.body as IBody["updateTeams"];
     if (email === undefined || email === null) {
       return await res.status(400).send("O campo 'email' está faltando na requisição.");
     }
 
-    if (teams === undefined || teams === null || teams.length === 0) {
-      return await res.status(400).send("O campo 'time(s)' está faltando na requisição.");
+    if (newTeams === undefined || newTeams === null) {
+      return await res.status(400).send("O campo 'novo(s) time(s)' está faltando na requisição.");
     }
 
-    if (teams.split(",").length > 3) {
+    if (newTeams.split(",").length > 3) {
       return await res.status(400).send("Você só pode acompanhar até três times!");
     }
 
@@ -133,7 +133,7 @@ class UserController implements IUserController {
         return await res.status(404).send("Usuário não encontrado.");
       }
 
-      await userServices.updateTeams(teams, user);
+      await userServices.updateTeams(newTeams, user);
 
       await res.status(201).send(`Seus times foram atualizados com sucesso.`);
     } catch (err) {
