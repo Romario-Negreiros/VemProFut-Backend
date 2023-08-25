@@ -21,7 +21,7 @@ class UserController implements IUserController {
         return await res.status(404).send("Usuário não encontrado.");
       }
 
-      await res.status(200).send({ user: { ...user, teams: user.teams?.split(",") } });
+      await res.status(200).send({ user });
     } catch (err) {
       console.log(err);
       await res.status(500).send("Erro no processamento interno ao tentar buscar o usuário.");
