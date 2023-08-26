@@ -1,5 +1,6 @@
 import Fastify from "fastify";
-import userRoutes from "../routes/users";
+import usersRoutes from "../routes/users";
+import teamsRoutes from "../routes/teams";
 import createDatabaseConnection from "./db";
 import mailer from "./mailer";
 import cors from "@fastify/cors";
@@ -37,7 +38,8 @@ class App implements IApp {
   };
 
   private readonly setRoutes = () => {
-    userRoutes(this.fastify);
+    usersRoutes(this.fastify);
+    teamsRoutes(this.fastify);
   };
 
   private readonly setMiddlewares = () => {
