@@ -28,8 +28,8 @@ const schemas = {
                 city: { type: "string" },
                 capacity: { type: "string" },
                 surface: { type: "string" },
-                image: { type: "string" }
-              }
+                image: { type: "string" },
+              },
             },
             createdAt: { type: "string" },
             isActive: { type: "number" },

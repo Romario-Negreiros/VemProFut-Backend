@@ -44,9 +44,9 @@ class App implements IApp {
 
   private readonly setMiddlewares = () => {
     void this.fastify.register(cors, {
-      origin: "http://localhost:3333"
-    })
-  }
+      origin: "http://localhost:3333",
+    });
+  };
 
   private readonly runServer = () => {
     this.fastify.listen({ port: 5000 }, (err) => {

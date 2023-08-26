@@ -8,4 +8,4 @@ export default interface Venue extends RowDataPacket {
   capacity?: number;
   surface?: string;
   image?: string;
-};
+}

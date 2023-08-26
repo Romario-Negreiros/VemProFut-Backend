@@ -10,7 +10,7 @@ class TeamController implements ITeamController {
     }
 
     try {
-      const team = await teamServices.getOne(id)
+      const team = await teamServices.getOne(id);
 
       if (team === undefined) {
         return await res.status(404).send("Time não encontrado.");
@@ -21,7 +21,7 @@ class TeamController implements ITeamController {
       console.log(err);
       await res.status(500).send("Erro no processamento interno ao tentar buscar o usuário.");
     }
-  }
-};
+  };
+}
 
 export default new TeamController();

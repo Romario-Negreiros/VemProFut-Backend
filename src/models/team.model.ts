@@ -10,4 +10,4 @@ export default interface Team extends RowDataPacket {
   founded?: number;
   logo?: string;
   venueId?: number;
-};
+}

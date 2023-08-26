@@ -21,8 +21,8 @@ const teamsRoutes = (app: TFastifyInstance) => {
     {
       schema: schemas.getOne,
     },
-    teamController.getOne
-  )
+    teamController.getOne,
+  );
 };
 
 export default teamsRoutes;
