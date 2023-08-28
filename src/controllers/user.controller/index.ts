@@ -51,9 +51,9 @@ class UserController implements IUserController {
 
       await res
         .status(201)
-        .send(
-          `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
-        );
+        .send({
+        success:  `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
+      });
     } catch (err) {
       console.log(err);
       const error = err as QueryError;
@@ -135,7 +135,7 @@ class UserController implements IUserController {
 
       await userServices.updateTeams(newTeams, user);
 
-      await res.status(201).send(`Seus times foram atualizados com sucesso.`);
+      await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
     } catch (err) {
       console.log(err);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os times do usuário." });
