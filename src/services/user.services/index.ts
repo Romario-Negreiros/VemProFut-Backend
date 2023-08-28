@@ -20,7 +20,8 @@ class UserServices implements IUserServices {
       const user = result?.[0];
       if (user.teams !== undefined && user.teams !== null) {
         const teams = [];
-        for (const teamId of user.teams?.split(",")) {
+        const userTeamsIds = user.teams as unknown as string
+        for (const teamId of userTeamsIds?.split(",")) {
           const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
           const team = teamQueryRes?.[0];
           if (team === undefined) continue;
