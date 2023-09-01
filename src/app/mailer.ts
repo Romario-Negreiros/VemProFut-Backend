@@ -4,6 +4,7 @@ import ejs from "ejs";
 import juice from "juice";
 
 import mailerConfig from "../config/mailer.config";
+import env from "../config/env.config";
 
 import type { SendMailOptions } from "nodemailer";
 
@@ -44,7 +45,7 @@ class Mailer implements IMailer {
       const html = juice(ejs.render(template, options.templateVars));
 
       await transport.sendMail({
-        from: process.env.ZOHOMAIL_USER,
+        from: env.zohomailUser,
         to: options.to,
         subject: options.subject,
         html,
