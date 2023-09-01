@@ -5,6 +5,7 @@ import type Venue from "./venue.model";
 export default interface User extends RowDataPacket {
   id?: number;
   name?: string;
+  password?: string;
   email?: string;
   createdAt?: string;
   isActive?: number;
