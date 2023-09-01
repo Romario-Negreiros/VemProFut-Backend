@@ -1,3 +1,4 @@
+import app from "../../app";
 import userServices from "../../services/user.services";
 import crypto from "crypto";
 
@@ -29,13 +30,17 @@ class UserController implements IUserController {
   };
 
   register: Controller = async (req, res) => {
-    const { name, email, teams } = req.body as IBody["register"];
+    const { name, email, password, teams } = req.body as IBody["register"];
     if (name === undefined || name === null) {
       return await res.status(400).send({ error: "O campo 'nome' está faltando na requisição." });
     }
 
     if (email === undefined || email === null) {
       return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
+    }
+
+    if (password === undefined || password === null) {
+      return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
 
     if (teams !== undefined && teams?.split(",").length > 3) {
@@ -47,7 +52,7 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
-      await userServices.register(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, teams);
+      await userServices.register(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, password, teams);
 
       await res
         .status(201)
@@ -82,12 +87,12 @@ class UserController implements IUserController {
         return await res.status(404).send({ error: "Usuário não encontrado." });
       }
 
-      if (user.verify_email_token === null || user.verify_email_token_expiration === null) {
+      if (user.verifyEmailToken === null || user.verifyEmailTokenExpiration === null) {
         return await res.status(400).send({ error: "Usuário com o email já verificado." });
       }
 
       const now = new Date();
-      const tokenExpiration = new Date(user.verify_email_token_expiration as string);
+      const tokenExpiration = new Date(user.verifyEmailTokenExpiration as string);
 
       if (now > tokenExpiration) {
         await userServices.delete(user);
@@ -95,17 +100,22 @@ class UserController implements IUserController {
         return await res.status(400).send({ error: "O token de validação de email expirou, crie sua conta novamente." });
       }
 
-      if (token !== user.verify_email_token) {
-        return await res.status(400).send({ error: "Token inválido." });
+      if (token !== user.verifyEmailToken) {
+        await userServices.delete(user);
+
+        return await res.status(400).send({ error: "Token inválido, crie sua conta novamente." });
       }
 
       await userServices.verifyEmail(email, token);
 
-      user.is_active = 1;
-      delete user.verify_email_token;
-      delete user.verify_email_token_expiration;
+      user.isActive = 1;
+      delete user.verifyEmailToken;
+      delete user.verifyEmailTokenExpiration;
+      delete user.password;
 
-      await res.status(200).send({ user });
+      const jwt = app.fastify.jwt.sign(user, { expiresIn: 86400 });
+
+      await res.status(200).send({ user, jwt });
     } catch (err) {
       console.log(err);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar verificar o email do usuário." });
@@ -157,7 +167,7 @@ class UserController implements IUserController {
 
       await userServices.delete(user);
 
-      await res.status(200).send({ error: "Usuário deletado com sucesso." });
+      await res.status(200).send({ success: "Usuário deletado com sucesso." });
     } catch (err) {
       console.log(err);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar deletar o usuário." });
