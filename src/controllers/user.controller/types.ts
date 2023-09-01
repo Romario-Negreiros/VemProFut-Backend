@@ -22,6 +22,7 @@ export interface IBody {
   register: {
     name?: string;
     email?: string;
+    password?: string;
     teams?: string;
   };
   updateTeams: {
