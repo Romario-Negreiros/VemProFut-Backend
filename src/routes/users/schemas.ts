@@ -82,7 +82,7 @@ const schemas = {
       201: {
         type: "object",
         properties: {
-          error: {
+          success: {
             type: "string",
           },
         },
@@ -178,10 +178,10 @@ const schemas = {
       },
     },
     response: {
-      200: {
+      201: {
         type: "object",
         properties: {
-          error: {
+          success: {
             type: "string",
           },
         },
@@ -232,7 +232,7 @@ const schemas = {
       200: {
         type: "object",
         properties: {
-          error: {
+          success: {
             type: "string",
           },
         },
