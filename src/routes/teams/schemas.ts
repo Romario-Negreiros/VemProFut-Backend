@@ -27,13 +27,28 @@ const schemas = {
               image: { type: "string" },
             },
           },
-          400: {
+        },
+      },
+      400: {
+        type: "object",
+        properties: {
+          error: {
             type: "string",
           },
-          404: {
+        },
+      },
+      404: {
+        type: "object",
+        properties: {
+          error: {
             type: "string",
           },
-          500: {
+        },
+      },
+      500: {
+        type: "object",
+        properties: {
+          error: {
             type: "string",
           },
         },

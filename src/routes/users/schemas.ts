@@ -37,19 +37,40 @@ const schemas = {
         },
       },
       400: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       404: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       500: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
     },
   },
 
   register: {
     body: {
+      name: {
+        type: "string",
+      },
+      password: {
+        type: "string",
+      },
       email: {
         type: "string",
       },
@@ -59,13 +80,28 @@ const schemas = {
     },
     response: {
       201: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       400: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       500: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
     },
     headers: {
@@ -100,16 +136,34 @@ const schemas = {
             created_at: { type: "string" },
             is_active: { type: "number" },
           },
+          jwt: {
+            type: "string",
+          },
         },
       },
       400: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       404: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       500: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
     },
   },
@@ -125,16 +179,36 @@ const schemas = {
     },
     response: {
       200: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       400: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       404: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       500: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
     },
     headers: {
@@ -156,16 +230,36 @@ const schemas = {
     },
     response: {
       200: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       400: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       404: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
       500: {
-        type: "string",
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
       },
     },
   },
