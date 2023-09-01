@@ -1,31 +1,23 @@
 import userController from "../../controllers/user.controller";
 import schemas from "./schemas";
 
-import type { FastifyBaseLogger, FastifyInstance, FastifyTypeProviderDefault, RawServerDefault } from "fastify";
-import type { IncomingMessage, ServerResponse } from "http";
+import type { FastifyInstance } from "fastify";
 
-type TFastifyInstance = FastifyInstance<
-  RawServerDefault,
-  IncomingMessage,
-  ServerResponse<IncomingMessage>,
-  FastifyBaseLogger,
-  FastifyTypeProviderDefault
->;
 
-function usersRoutes(app: TFastifyInstance) {
+function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
   const baseUrl = "/api/users";
 
   // GET ROUTES
-  app.get(
+  fastify.get(
     `${baseUrl}/get-one/:email`,
     {
-      schema: schemas.getOne,
+      schema: schemas.getOne
     },
     userController.getOne,
   );
 
   // POST ROUTES
-  app.post(
+  fastify.post(
     `${baseUrl}/register`,
     {
       schema: schemas.register,
@@ -34,7 +26,7 @@ function usersRoutes(app: TFastifyInstance) {
   );
 
   // PUT ROUTES
-  app.put(
+  fastify.put(
     `${baseUrl}/verify-email/:email/:token`,
     {
       schema: schemas.verifyEmail,
@@ -42,7 +34,7 @@ function usersRoutes(app: TFastifyInstance) {
     userController.verifyEmail,
   );
 
-  app.put(
+  fastify.put(
     `${baseUrl}/update/teams`,
     {
       schema: schemas.updateTeams,
@@ -51,7 +43,7 @@ function usersRoutes(app: TFastifyInstance) {
   );
 
   // DELETE ROUTES
-  app.delete(
+  fastify.delete(
     `${baseUrl}/delete/:email`,
     {
       schema: schemas.delete,
