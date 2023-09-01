@@ -1,5 +1,7 @@
 import app from "../../app";
 
+import bcrypt from "bcryptjs";
+
 import type Team from "../../models/team.model";
 import type User from "../../models/user.model";
 import type Venue from "../../models/venue.model";
@@ -19,6 +21,7 @@ class UserServices implements IUserServices {
     } else {
       const user = result?.[0];
       if (user.teams !== undefined && user.teams !== null) {
+        delete user.password;
         const teams = [];
         const userTeamsIds = user.teams as unknown as string
         for (const teamId of userTeamsIds?.split(",")) {
@@ -41,13 +44,15 @@ class UserServices implements IUserServices {
     }
   };
 
-  register: IUserServices["register"] = async (verifyEmailToken, verifyEmailTokenExpiration, name, email, teams) => {
+  register: IUserServices["register"] = async (verifyEmailToken, verifyEmailTokenExpiration, name, email, password, teams) => {
     try {
       await app.db.beginTransaction();
 
+      const hash = await bcrypt.hash(password, 15);
+
       await app.db.query(
-        "INSERT INTO Users (name, email, verifyEmailToken, verifyEmailTokenExpiration) VALUES (?, ?, ?, ?)",
-        [name, email, verifyEmailToken, verifyEmailTokenExpiration],
+        "INSERT INTO Users (name, email, password, verifyEmailToken, verifyEmailTokenExpiration) VALUES (?, ?, ?, ?, ?)",
+        [name, email, hash, verifyEmailToken, verifyEmailTokenExpiration],
       );
 
       await app.db.query("SET @userId = LAST_INSERT_ID()");
@@ -78,7 +83,7 @@ class UserServices implements IUserServices {
 
   verifyEmail: IUserServices["verifyEmail"] = async (email, token) => {
     await app.db.query(
-      "UPDATE users SET verify_email_token = ?, verify_email_token_expiration = ?, is_active = ? WHERE verify_email_token = ? and email = ?",
+      "UPDATE users SET verifyEmailToken = ?, verifyEmailTokenExpiration = ?, isActive = ? WHERE verifyEmailToken = ? and email = ?",
       [null, null, true, token, email],
     );
   };
