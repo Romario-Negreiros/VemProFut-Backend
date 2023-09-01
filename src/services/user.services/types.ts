@@ -7,6 +7,7 @@ type TRegister = (
   verifyEmailTokenExpiration: string,
   name: string,
   email: string,
+  password: string,
   teams?: string,
 ) => Promise<void>;
 
