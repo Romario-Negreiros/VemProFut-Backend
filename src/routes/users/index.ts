@@ -18,12 +18,20 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
 
   // POST ROUTES
   fastify.post(
-    `${baseUrl}/register`,
+    `${baseUrl}/sign-up`,
     {
-      schema: schemas.register,
+      schema: schemas.signUp,
     },
-    userController.register,
+    userController.signUp,
   );
+
+  fastify.post(
+    `${baseUrl}/sign-in`,
+    {
+      schema: schemas.signIn
+    },
+    userController.signIn
+  )
 
   // PUT ROUTES
   fastify.put(
