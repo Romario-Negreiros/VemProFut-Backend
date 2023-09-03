@@ -4,7 +4,8 @@ export type Controller = (req: FastifyRequest, res: FastifyReply) => Promise<voi
 
 export interface IUserController {
   getOne: Controller;
-  register: Controller;
+  signUp: Controller;
+  signIn: Controller;
   verifyEmail: Controller;
   updateTeams: Controller;
   delete: Controller;
@@ -19,13 +20,14 @@ export interface IParams {
 }
 
 export interface IBody {
-  register: {
+  signUp: {
     name?: string;
     email?: string;
     password?: string;
     teams?: string;
   };
+  signIn: Pick<IBody["signUp"], "email" | "password">;
   updateTeams: {
     newTeams?: string;
-  } & Omit<IBody["register"], "teams">;
+  } & Omit<IBody["signUp"], "teams">;
 }

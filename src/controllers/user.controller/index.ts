@@ -29,8 +29,8 @@ class UserController implements IUserController {
     }
   };
 
-  register: Controller = async (req, res) => {
-    const { name, email, password, teams } = req.body as IBody["register"];
+  signUp: Controller = async (req, res) => {
+    const { name, email, password, teams } = req.body as IBody["signUp"];
     if (name === undefined || name === null) {
       return await res.status(400).send({ error: "O campo 'nome' está faltando na requisição." });
     }
@@ -52,7 +52,7 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
-      await userServices.register(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, password, teams);
+      await userServices.signUp(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, password, teams);
 
       await res
         .status(201)
