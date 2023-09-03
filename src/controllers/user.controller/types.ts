@@ -2,32 +2,23 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 export type Controller = (req: FastifyRequest, res: FastifyReply) => Promise<void>;
 
-export interface IUserController {
-  getOne: Controller;
+export interface IUserController { 
   signUp: Controller;
   signIn: Controller;
   verifyEmail: Controller;
-  updateTeams: Controller;
+  // updateTeams: Controller;
   delete: Controller;
 }
 
-export interface IParams {
-  getOne: {
-    email?: string;
-  };
-  verifyEmail: { token?: string } & IParams["getOne"];
-  delete: IParams["getOne"];
+export interface RequestParams {
+  email?: string;
+  token?: string;
 }
 
-export interface IBody {
-  signUp: {
-    name?: string;
-    email?: string;
-    password?: string;
-    teams?: string;
-  };
-  signIn: Pick<IBody["signUp"], "email" | "password">;
-  updateTeams: {
-    newTeams?: string;
-  } & Omit<IBody["signUp"], "teams">;
+export interface RequestBody {
+  name?: string;
+  email?: string;
+  password?: string;
+  teams?: string;
+  newTeams?: string;
 }
