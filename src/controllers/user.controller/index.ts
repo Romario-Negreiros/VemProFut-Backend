@@ -2,35 +2,17 @@ import app from "../../app";
 import userServices from "../../services/user.services";
 import crypto from "crypto";
 
-import type { Controller, IUserController, IParams, IBody } from "./types";
+import type { Controller, IUserController, RequestParams, RequestBody } from "./types";
 import type { QueryError } from "mysql2";
 
 // req = request
 // res = response
 
 class UserController implements IUserController {
-  getOne: Controller = async (req, res) => {
-    const { email } = req.params as IParams["getOne"];
-    if (email === undefined) {
-      return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
-    }
-
-    try {
-      const user = await userServices.getOne(email);
-
-      if (user === undefined) {
-        return await res.status(404).send({ error: "Usuário não encontrado." });
-      }
-
-      await res.status(200).send({ user });
-    } catch (err) {
-      console.log(err);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar buscar o usuário." });
-    }
-  };
-
   signUp: Controller = async (req, res) => {
-    const { name, email, password, teams } = req.body as IBody["signUp"];
+    const { name, email, password, teams } = req.body as RequestBody;
+    let wasCreated = false;
+
     if (name === undefined || name === null) {
       return await res.status(400).send({ error: "O campo 'nome' está faltando na requisição." });
     }
@@ -52,7 +34,19 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
-      await userServices.signUp(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, password, teams);
+      await userServices.create(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, password, teams);
+      wasCreated = true;
+
+      await app.mailer.send({
+        to: email,
+        subject: "Verify your email address",
+        templateName: "verify-email",
+        templateVars: {
+          name,
+          email,
+          token: verifyEmailToken,
+        },
+      });
 
       await res
         .status(201)
@@ -61,6 +55,11 @@ class UserController implements IUserController {
       });
     } catch (err) {
       console.log(err);
+
+      if (wasCreated) {
+        await userServices.delete(email);
+      }
+
       const error = err as QueryError;
       if (error.errno === 1062) {
         return await res.status(400).send({ error: "O usuário já está registrado." });
@@ -70,8 +69,20 @@ class UserController implements IUserController {
     }
   };
 
+  signIn: Controller = async (req, res) => {
+    const { email, password } = req.body as RequestBody;
+
+    if (email === undefined || email === null) {
+      return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
+    }
+
+    if (password === undefined || password === null) {
+      return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
+    }
+  };
+
   verifyEmail: Controller = async (req, res) => {
-    const { email, token } = req.params as IParams["verifyEmail"];
+    const { email, token } = req.params as RequestParams;
     if (email === undefined) {
       return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
     }
@@ -122,50 +133,44 @@ class UserController implements IUserController {
     }
   };
 
-  updateTeams: Controller = async (req, res) => {
-    const { email, newTeams } = req.body as IBody["updateTeams"];
-    if (email === undefined || email === null) {
-      return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
-    }
+  // updateTeams: Controller = async (req, res) => {
+  //   const { email, newTeams } = req.body as RequestBody
+  //   if (email === undefined || email === null) {
+  //     return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
+  //   }
 
-    if (newTeams === undefined || newTeams === null) {
-      return await res.status(400).send({ error: "O campo 'novo(s) time(s)' está faltando na requisição." });
-    }
+  //   if (newTeams === undefined || newTeams === null) {
+  //     return await res.status(400).send({ error: "O campo 'novo(s) time(s)' está faltando na requisição." });
+  //   }
 
-    if (newTeams.split(",").length > 3) {
-      return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
-    }
+  //   if (newTeams.split(",").length > 3) {
+  //     return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
+  //   }
 
-    try {
-      const user = await userServices.getOne(email);
+  //   try {
+  //     const user = await userServices.getOne(email);
 
-      if (user === undefined) {
-        return await res.status(404).send({ error: "Usuário não encontrado." });
-      }
+  //     if (user === undefined) {
+  //       return await res.status(404).send({ error: "Usuário não encontrado." });
+  //     }
 
-      await userServices.updateTeams(newTeams, user);
+  //     await userServices.updateTeams(newTeams, user);
 
-      await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
-    } catch (err) {
-      console.log(err);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os times do usuário." });
-    }
-  };
+  //     await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
+  //   } catch (err) {
+  //     console.log(err);
+  //     await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os times do usuário." });
+  //   }
+  // };
 
   delete: Controller = async (req, res) => {
-    const { email } = req.params as IParams["delete"];
+    const { email } = req.params as RequestParams;
     if (email === undefined) {
       return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
     }
 
     try {
-      const user = await userServices.getOne(email);
-
-      if (user === undefined) {
-        return await res.status(404).send({ error: "Usuário não encontrado." });
-      }
-
-      await userServices.delete(user);
+      await userServices.delete(email);
 
       await res.status(200).send({ success: "Usuário deletado com sucesso." });
     } catch (err) {
