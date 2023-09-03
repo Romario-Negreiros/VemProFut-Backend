@@ -2,7 +2,7 @@ import type User from "../../models/user.model";
 
 type TGetOne = (email: string) => Promise<User | undefined>;
 
-type TRegister = (
+type TSignUp = (
   verifyEmailToken: string,
   verifyEmailTokenExpiration: string,
   name: string,
@@ -19,7 +19,7 @@ type TDelete = (user: User) => Promise<void>;
 
 export interface IUserServices {
   getOne: TGetOne;
-  register: TRegister;
+  signUp: TSignUp;
   verifyEmail: TVerifyEmail;
   updateTeams: TUpdateTeams;
   delete: TDelete;

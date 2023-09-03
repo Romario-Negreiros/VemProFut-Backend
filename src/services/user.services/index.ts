@@ -44,7 +44,7 @@ class UserServices implements IUserServices {
     }
   };
 
-  register: IUserServices["register"] = async (verifyEmailToken, verifyEmailTokenExpiration, name, email, password, teams) => {
+  signUp: IUserServices["signUp"] = async (verifyEmailToken, verifyEmailTokenExpiration, name, email, password, teams) => {
     try {
       await app.db.beginTransaction();
 
