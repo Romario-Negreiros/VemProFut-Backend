@@ -23,7 +23,7 @@ class UserServices implements IUserServices {
       if (user.teams !== undefined && user.teams !== null) {
         delete user.password;
         const teams = [];
-        const userTeamsIds = user.teams as unknown as string
+        const userTeamsIds = user.teams as unknown as string;
         for (const teamId of userTeamsIds?.split(",")) {
           const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
           const team = teamQueryRes?.[0];
@@ -44,18 +44,25 @@ class UserServices implements IUserServices {
     }
   };
 
-  signUp: IUserServices["signUp"] = async (verifyEmailToken, verifyEmailTokenExpiration, name, email, password, teams) => {
+  create: IUserServices["create"] = async (
+    name,
+    email,
+    password,
+    verifyEmailToken,
+    verifyEmailTokenExpiration,
+    teams,
+  ) => {
     try {
       await app.db.beginTransaction();
 
       const hash = await bcrypt.hash(password, 15);
-
+  
       await app.db.query(
         "INSERT INTO Users (name, email, password, verifyEmailToken, verifyEmailTokenExpiration) VALUES (?, ?, ?, ?, ?)",
         [name, email, hash, verifyEmailToken, verifyEmailTokenExpiration],
       );
 
-      await app.db.query("SET @userId = LAST_INSERT_ID()");
+     await app.db.query("SET @userId = LAST_INSERT_ID()");
 
       if (teams !== undefined) {
         for (const team of teams.split(",")) {
@@ -63,21 +70,10 @@ class UserServices implements IUserServices {
         }
       }
 
-      await app.mailer.send({
-        to: email,
-        subject: "Verify your email address",
-        templateName: "verify-email",
-        templateVars: {
-          name,
-          email,
-          token: verifyEmailToken,
-        },
-      });
-
       await app.db.commit();
-    } catch (err) {
+    } catch (error) {
       await app.db.rollback();
-      throw err;
+      throw error;
     }
   };
 
@@ -126,15 +122,15 @@ class UserServices implements IUserServices {
     }
   };
 
-  delete: IUserServices["delete"] = async (user) => {
+  delete: IUserServices["delete"] = async (email) => {
     try {
       await app.db.beginTransaction();
 
-      if (user.teams !== null) {
-        await app.db.query("DELETE FROM Users_Teams WHERE userId = ?", [user.id]);
-      }
+      await app.db.query("SET @userId = (SELECT id FROM Users WHERE email = ?)", [email]);
 
-      await app.db.query("DELETE FROM Users WHERE email = ?", [user.email]);
+      await app.db.query("DELETE FROM Users_Teams WHERE userId = @userId");
+
+      await app.db.query("DELETE FROM Users WHERE email = ?", [email]);
 
       await app.db.commit();
     } catch (err) {
