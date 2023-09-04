@@ -11,9 +11,5 @@ export default interface User extends RowDataPacket {
   isActive?: number;
   verifyEmailToken?: string;
   verifyEmailTokenExpiration?: string;
-  teams: Array<
-  {
-    venue: Venue | null;
-  } & Omit<Team, "venueId">
-> | null;
+  teams?: Array<Team & Venue>;
 }
