@@ -1,14 +1,15 @@
 import app from "../../app";
 
+import teamServices from "../team.services";
+import venuesServices from "../venues.services";
 import bcrypt from "bcryptjs";
 
 import type Team from "../../models/team.model";
 import type User from "../../models/user.model";
-import type Venue from "../../models/venue.model";
 import type { IUserServices } from "./types";
 
 class UserServices implements IUserServices {
-  getOne: IUserServices["getOne"] = async (email) => {
+  get: IUserServices["get"] = async (email) => {
     const query = `
     SELECT Users.*, GROUP_CONCAT(Teams.id) AS teams 
     FROM Users 
@@ -19,27 +20,23 @@ class UserServices implements IUserServices {
     if (result?.[0] === undefined) {
       return undefined;
     } else {
-      const user = result?.[0];
-      if (user.teams !== undefined && user.teams !== null) {
-        delete user.password;
+      const user = result[0];
+      if (!user.teams) {
+        return { ...user };
+      } else {
         const teams = [];
         const userTeamsIds = user.teams as unknown as string;
         for (const teamId of userTeamsIds?.split(",")) {
-          const [teamQueryRes] = await app.db.query<Team[]>("SELECT * FROM Teams where id = ?", [+teamId]);
-          const team = teamQueryRes?.[0];
-          if (team === undefined) continue;
-          const [venueQueryRes] = await app.db.query<Venue[]>("SELECT * FROM Venues where id = ?", [team.venueId]);
-          const venue = venueQueryRes?.[0];
-          delete team.venueId;
-          if (venue === undefined) {
-            teams.push({ ...team, venue: null });
-          } else {
+          const team = await teamServices.get(+teamId);
+          if (team) {
+            let venue;
+            if (team.venueId) {
+              venue = await venuesServices.get(team.venueId);
+            }
             teams.push({ ...team, venue });
           }
         }
-        return { ...user, teams: [...teams] };
-      } else {
-        return { ...user, teams: null };
+        return { ...user, teams };
       }
     }
   };
@@ -56,13 +53,13 @@ class UserServices implements IUserServices {
       await app.db.beginTransaction();
 
       const hash = await bcrypt.hash(password, 15);
-  
+
       await app.db.query(
         "INSERT INTO Users (name, email, password, verifyEmailToken, verifyEmailTokenExpiration) VALUES (?, ?, ?, ?, ?)",
         [name, email, hash, verifyEmailToken, verifyEmailTokenExpiration],
       );
 
-     await app.db.query("SET @userId = LAST_INSERT_ID()");
+      await app.db.query("SET @userId = LAST_INSERT_ID()");
 
       if (teams !== undefined) {
         for (const team of teams.split(",")) {
