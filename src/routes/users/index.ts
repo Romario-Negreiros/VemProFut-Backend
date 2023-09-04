@@ -3,18 +3,8 @@ import schemas from "./schemas";
 
 import type { FastifyInstance } from "fastify";
 
-
 function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
   const baseUrl = "/api/users";
-
-  // GET ROUTES
-  fastify.get(
-    `${baseUrl}/get-one/:email`,
-    {
-      schema: schemas.getOne
-    },
-    userController.getOne,
-  );
 
   // POST ROUTES
   fastify.post(
@@ -42,13 +32,13 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
     userController.verifyEmail,
   );
 
-  fastify.put(
-    `${baseUrl}/update/teams`,
-    {
-      schema: schemas.updateTeams,
-    },
-    userController.updateTeams,
-  );
+  // fastify.put(
+  //   `${baseUrl}/update/teams`,
+  //   {
+  //     schema: schemas.updateTeams, refactor
+  //   },
+  //   userController.updateTeams,
+  // );
 
   // DELETE ROUTES
   fastify.delete(
