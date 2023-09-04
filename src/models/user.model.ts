@@ -8,8 +8,8 @@ export default interface User extends RowDataPacket {
   password?: string;
   email?: string;
   createdAt?: string;
+  teams?: Array<Team & Venue> | null;
   isActive?: number;
-  verifyEmailToken?: string;
-  verifyEmailTokenExpiration?: string;
-  teams?: Array<Team & Venue>;
+  verifyEmailToken?: string | null;
+  verifyEmailTokenExpiration?: string | null;
 }
