@@ -36,10 +36,12 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
+      const hashedPassword = await bcrypt.hash(password, 15);
+
       await userServices.create(
         name,
         email,
-        password,
+        hashedPassword,
         verifyEmailToken,
         verifyEmailTokenExpiration.toISOString(),
         teams,
