@@ -11,7 +11,7 @@ const schemas = {
         type: "string",
       },
       teams: {
-        type: "string",
+        type: "array",
       },
     },
     response: {
