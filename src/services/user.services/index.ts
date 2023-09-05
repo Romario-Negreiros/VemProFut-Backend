@@ -59,7 +59,7 @@ class UserServices implements IUserServices {
       await app.db.query("SET @userId = LAST_INSERT_ID()");
 
       if (teams !== undefined) {
-        for (const team of teams.split(",")) {
+        for (const team of teams) {
           await app.db.query("INSERT INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))", [+team, +team]);
         }
       }

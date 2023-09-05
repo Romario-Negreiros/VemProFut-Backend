@@ -10,11 +10,11 @@ export interface IUserServices {
     password: string,
     verifyEmailToken: string,
     verifyEmailTokenExpiration: string,
-    teams?: string,
+    teams?: number[],
   ) => Promise<void>;
   update: (
     email: string,
-    columnsToUpdate: Pick<User, KeysToPickFromUser> & { teams?: string },
+    columnsToUpdate: Pick<User, KeysToPickFromUser>,
     columnsInWhereClause: {
       id?: number,
       email?: string,
