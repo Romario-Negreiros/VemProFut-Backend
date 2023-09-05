@@ -179,13 +179,30 @@ const schemas = {
     },
   },
 
-  updateTeams: {
+  update: {
     body: {
+      name: {
+        type: "string",
+      },
+      password: {
+        type: "string",
+      },
       email: {
         type: "string",
       },
-      teams: {
-        type: "string",
+      userTeams: {
+        type: "object",
+        properties: {
+          removeAll: {
+            type: "boolean",
+          },
+          teamsToRemove: {
+            type: "array",
+          },
+          teamsToAdd: {
+            type: "array",
+          },
+        },
       },
     },
     response: {
@@ -198,6 +215,14 @@ const schemas = {
         },
       },
       400: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
+      401: {
         type: "object",
         properties: {
           error: {
