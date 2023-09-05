@@ -9,7 +9,7 @@ import type User from "../../models/user.model";
 import type { IUserServices } from "./types";
 
 class UserServices implements IUserServices {
-  get: IUserServices["get"] = async (email) => {
+  get: IUserServices["get"] = async (email) => { // refactor: get only some fields of user
     const query = `
     SELECT Users.*, GROUP_CONCAT(Teams.id) AS teams 
     FROM Users 
@@ -63,7 +63,7 @@ class UserServices implements IUserServices {
 
       if (teams !== undefined) {
         for (const team of teams.split(",")) {
-          await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (@userId, ?)", [+team]);
+          await app.db.query("INSERT INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))", [+team, +team]);
         }
       }
 
@@ -71,6 +71,66 @@ class UserServices implements IUserServices {
     } catch (error) {
       await app.db.rollback();
       throw error;
+    }
+  };
+
+  update: IUserServices["update"] = async (
+    email,
+    columnsToUpdate,
+    columnsInWhereClause,
+    whereComparision,
+    userTeams,
+  ) => {
+    if (Object.keys(columnsToUpdate).length > 0) {
+      let query = "UPDATE Users SET ";
+      const valuesToUpdate: Array<string | number | null> = [];
+      let colToUpdate: keyof typeof columnsToUpdate;
+      for (colToUpdate in columnsToUpdate) {
+        query += colToUpdate + " = ?, ";
+        valuesToUpdate.push(columnsToUpdate[colToUpdate] as string | number | null);
+      }
+
+      query = query.substring(0, query.length - 2) + " WHERE ";
+      let colInWhere: keyof typeof columnsInWhereClause;
+      for (colInWhere in columnsInWhereClause) {
+        if (whereComparision) {
+          query += colInWhere + " = ? " + whereComparision + " ";
+        } else {
+          query += colInWhere + " = ?";
+        }
+        valuesToUpdate.push(columnsInWhereClause[colInWhere] as string | number | null);
+      }
+
+      if (whereComparision) {
+        query = query.substring(0, query.length - (whereComparision.length + 2));
+      }
+
+      await app.db.query(query, valuesToUpdate);
+    }
+
+    if (userTeams) {
+      const { removeAll, teamsToRemove, teamsToAdd } = userTeams;
+      try {
+        await app.db.beginTransaction();
+
+        await app.db.query("SET @userId = (SELECT id FROM Users WHERE email = ?)", [email]);
+
+        if (removeAll) {
+          await app.db.query("DELETE FROM Users_Teams WHERE userId = @userId");
+        } else {
+          for (const team of teamsToRemove) {
+            await app.db.query("DELETE FROM Users_Teams WHERE userId = @userId and teamId = ?", [team]);
+          }
+
+          for (const team of teamsToAdd) {
+            await app.db.query("INSERT IGNORE INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))", [team, team]);
+          }
+        }
+        await app.db.commit();
+      } catch (error) {
+        await app.db.rollback();
+        throw error;
+      }
     }
   };
 
