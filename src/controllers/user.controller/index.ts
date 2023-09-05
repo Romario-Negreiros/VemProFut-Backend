@@ -1,9 +1,11 @@
 import app from "../../app";
 import userServices from "../../services/user.services";
 import crypto from "crypto";
+import bcrypt from "bcryptjs";
 
 import type { Controller, IUserController, RequestParams, RequestBody } from "./types";
 import type { QueryError } from "mysql2";
+import type User from "../../models/user.model";
 
 // req = request
 // res = response
@@ -34,7 +36,14 @@ class UserController implements IUserController {
       const verifyEmailTokenExpiration = new Date();
       verifyEmailTokenExpiration.setHours(verifyEmailTokenExpiration.getHours() + 1);
 
-      await userServices.create(verifyEmailToken, verifyEmailTokenExpiration.toISOString(), name, email, password, teams);
+      await userServices.create(
+        name,
+        email,
+        password,
+        verifyEmailToken,
+        verifyEmailTokenExpiration.toISOString(),
+        teams,
+      );
       wasCreated = true;
 
       await app.mailer.send({
@@ -48,10 +57,8 @@ class UserController implements IUserController {
         },
       });
 
-      await res
-        .status(201)
-        .send({
-        success:  `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
+      await res.status(201).send({
+        success: `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
       });
     } catch (err) {
       console.log(err);
@@ -92,7 +99,7 @@ class UserController implements IUserController {
     }
 
     try {
-      const user = await userServices.getOne(email);
+      const user = await userServices.get(email);
 
       if (user === undefined) {
         return await res.status(404).send({ error: "Usuário não encontrado." });
@@ -106,18 +113,31 @@ class UserController implements IUserController {
       const tokenExpiration = new Date(user.verifyEmailTokenExpiration as string);
 
       if (now > tokenExpiration) {
-        await userServices.delete(user);
+        await userServices.delete(email);
 
-        return await res.status(400).send({ error: "O token de validação de email expirou, crie sua conta novamente." });
+        return await res
+          .status(400)
+          .send({ error: "O token de validação de email expirou, crie sua conta novamente." });
       }
 
       if (token !== user.verifyEmailToken) {
-        await userServices.delete(user);
+        await userServices.delete(email);
 
         return await res.status(400).send({ error: "Token inválido, crie sua conta novamente." });
       }
 
-      await userServices.verifyEmail(email, token);
+      await userServices.update(
+        email,
+        {
+          isActive: 1,
+          verifyEmailToken: null,
+          verifyEmailTokenExpiration: null,
+        },
+        {
+          email,
+        },
+        "and",
+      );
 
       user.isActive = 1;
       delete user.verifyEmailToken;
@@ -133,35 +153,39 @@ class UserController implements IUserController {
     }
   };
 
-  // updateTeams: Controller = async (req, res) => {
-  //   const { email, newTeams } = req.body as RequestBody
-  //   if (email === undefined || email === null) {
-  //     return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
-  //   }
+  update: Controller = async (req, res) => {
+    const body = req.body as RequestBody
+    if (!body.password) {
+      return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
+    }
+    
+    try {
+      const { email, teams } = req.user.valueOf() as User;
 
-  //   if (newTeams === undefined || newTeams === null) {
-  //     return await res.status(400).send({ error: "O campo 'novo(s) time(s)' está faltando na requisição." });
-  //   }
+      const { userTeams } = body;
+      if (userTeams && teams) {
+        if (((teams?.length - userTeams?.teamsToRemove.length) + userTeams?.teamsToAdd.length) > 3) {
+          return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
+        }
+      }
 
-  //   if (newTeams.split(",").length > 3) {
-  //     return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
-  //   }
+      const user = await userServices.get(email as string); // refactor userServices.get
+      const isPasswordCorrect = await bcrypt.compare(body.password, user?.password as string);
+      if (!isPasswordCorrect) {
+        return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
+      }
 
-  //   try {
-  //     const user = await userServices.getOne(email);
+      delete body.password;
+      delete body.userTeams;
+      delete body.teams;
+      await userServices.update(email as string, body, { email }, undefined, userTeams);
 
-  //     if (user === undefined) {
-  //       return await res.status(404).send({ error: "Usuário não encontrado." });
-  //     }
-
-  //     await userServices.updateTeams(newTeams, user);
-
-  //     await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
-  //   } catch (err) {
-  //     console.log(err);
-  //     await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os times do usuário." });
-  //   }
-  // };
+      await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
+    } catch (err) {
+      console.log(err);
+      await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os times do usuário." });
+    }
+  };
 
   delete: Controller = async (req, res) => {
     const { email } = req.params as RequestParams;
