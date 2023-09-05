@@ -32,13 +32,14 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
     userController.verifyEmail,
   );
 
-  // fastify.put(
-  //   `${baseUrl}/update/teams`,
-  //   {
-  //     schema: schemas.updateTeams, refactor
-  //   },
-  //   userController.updateTeams,
-  // );
+  fastify.put(
+    `${baseUrl}/update`,
+    {
+      schema: schemas.update,
+      onRequest: [fastify.authenticate]
+    },
+    userController.update,
+  );
 
   // DELETE ROUTES
   fastify.delete(
