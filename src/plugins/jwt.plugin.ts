@@ -12,8 +12,8 @@ const jwtPlugin = async (req: FastifyRequest, res: FastifyReply) => {
   if (parts.length !== 2) {
     return await res.status(401).send({ error: "Token de autenticação mal-formatado." })
   }
-
-  if (/^Bearer [aA-zZ0-9.,+\-?^~,/()]*$/i.test(authHeader)) {
+  
+  if (/^Bearer [a-z09.,-]*$/i.test(authHeader)) {
     return await res.status(401).send({ error: "Token de autenticação mal-formatado." })
   }
 
