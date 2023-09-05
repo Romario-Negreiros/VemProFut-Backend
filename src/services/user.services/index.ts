@@ -2,7 +2,6 @@ import app from "../../app";
 
 import teamServices from "../team.services";
 import venuesServices from "../venues.services";
-import bcrypt from "bcryptjs";
 
 import type Team from "../../models/team.model";
 import type User from "../../models/user.model";
@@ -52,11 +51,9 @@ class UserServices implements IUserServices {
     try {
       await app.db.beginTransaction();
 
-      const hash = await bcrypt.hash(password, 15);
-
       await app.db.query(
         "INSERT INTO Users (name, email, password, verifyEmailToken, verifyEmailTokenExpiration) VALUES (?, ?, ?, ?, ?)",
-        [name, email, hash, verifyEmailToken, verifyEmailTokenExpiration],
+        [name, email, password, verifyEmailToken, verifyEmailTokenExpiration],
       );
 
       await app.db.query("SET @userId = LAST_INSERT_ID()");
