@@ -19,7 +19,7 @@ export interface RequestBody {
   name?: string;
   email?: string;
   password?: string;
-  teams?: string;
+  teams?: number[];
   userTeams?: {
     removeAll: boolean;
     teamsToRemove: number[];

@@ -27,7 +27,7 @@ class UserController implements IUserController {
       return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
 
-    if (teams !== undefined && teams?.split(",").length > 3) {
+    if (teams !== undefined && teams.length > 3) {
       return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
     }
 
