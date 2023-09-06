@@ -3,7 +3,7 @@ import type User from "../../models/user.model";
 type KeysToPickFromUser = "name" | "password" | "isActive" | "verifyEmailToken" | "verifyEmailTokenExpiration";
 
 export interface IUserServices {
-  get: (email: string) => Promise<User | undefined>;
+  get: (email: string, fields?: KeysToPickFromUser[]) => Promise<User | undefined>;
   create: (
     name: string,
     email: string,
@@ -26,7 +26,5 @@ export interface IUserServices {
       teamsToAdd: number[];
     },
   ) => Promise<void>;
-  verifyEmail: (email: string, token: string) => Promise<void>;
-  updateTeams: (teams: string, user: User) => Promise<void>;
   delete: (email: string) => Promise<void>;
 }

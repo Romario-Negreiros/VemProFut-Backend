@@ -3,39 +3,49 @@ import app from "../../app";
 import teamServices from "../team.services";
 import venuesServices from "../venues.services";
 
-import type Team from "../../models/team.model";
 import type User from "../../models/user.model";
 import type { IUserServices } from "./types";
 
 class UserServices implements IUserServices {
-  get: IUserServices["get"] = async (email) => { // refactor: get only some fields of user
-    const query = `
+  get: IUserServices["get"] = async (email, fields) => {
+    // refactor: get only some fields of user
+    if (fields) {
+      const query = `SELECT ${fields.join(",")} FROM Users WHERE email = ?`;
+      const [result] = await app.db.query<User[]>(query, [email]);
+      if (result?.[0] === undefined) {
+        return undefined;
+      } else {
+        return result?.[0];
+      }
+    } else {
+      const query = `
     SELECT Users.*, GROUP_CONCAT(Teams.id) AS teams 
     FROM Users 
     LEFT JOIN Users_Teams ON Users.id = Users_Teams.userId 
     LEFT JOIN Teams ON Users_Teams.teamId = Teams.id 
     WHERE email = ? GROUP BY Users.id`;
-    const [result] = await app.db.query<User[]>(query, [email]);
-    if (result?.[0] === undefined) {
-      return undefined;
-    } else {
-      const user = result[0];
-      if (!user.teams) {
-        return { ...user };
+      const [result] = await app.db.query<User[]>(query, [email]);
+      if (result?.[0] === undefined) {
+        return undefined;
       } else {
-        const teams = [];
-        const userTeamsIds = user.teams as unknown as string;
-        for (const teamId of userTeamsIds?.split(",")) {
-          const team = await teamServices.get(+teamId);
-          if (team) {
-            let venue;
-            if (team.venueId) {
-              venue = await venuesServices.get(team.venueId);
+        const user = result[0];
+        if (!user.teams) {
+          return { ...user };
+        } else {
+          const teams = [];
+          const userTeamsIds = user.teams as unknown as string;
+          for (const teamId of userTeamsIds?.split(",")) {
+            const team = await teamServices.get(+teamId);
+            if (team) {
+              let venue;
+              if (team.venueId) {
+                venue = await venuesServices.get(team.venueId);
+              }
+              teams.push({ ...team, venue });
             }
-            teams.push({ ...team, venue });
           }
+          return { ...user, teams };
         }
-        return { ...user, teams };
       }
     }
   };
@@ -60,7 +70,10 @@ class UserServices implements IUserServices {
 
       if (teams !== undefined) {
         for (const team of teams) {
-          await app.db.query("INSERT INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))", [+team, +team]);
+          await app.db.query(
+            "INSERT INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))",
+            [+team, +team],
+          );
         }
       }
 
@@ -120,7 +133,10 @@ class UserServices implements IUserServices {
           }
 
           for (const team of teamsToAdd) {
-            await app.db.query("INSERT IGNORE INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))", [team, team]);
+            await app.db.query(
+              "INSERT IGNORE INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))",
+              [team, team],
+            );
           }
         }
         await app.db.commit();
@@ -128,51 +144,6 @@ class UserServices implements IUserServices {
         await app.db.rollback();
         throw error;
       }
-    }
-  };
-
-  verifyEmail: IUserServices["verifyEmail"] = async (email, token) => {
-    await app.db.query(
-      "UPDATE users SET verifyEmailToken = ?, verifyEmailTokenExpiration = ?, isActive = ? WHERE verifyEmailToken = ? and email = ?",
-      [null, null, true, token, email],
-    );
-  };
-
-  updateTeams: IUserServices["updateTeams"] = async (newTeamsIds, user) => {
-    try {
-      await app.db.beginTransaction();
-
-      if (newTeamsIds === "") {
-        await app.db.query("DELETE FROM Users_Teams WHERE userId = ?", [user.id]);
-      } else if (user.teams !== undefined && user.teams !== null) {
-        const userTeams = user.teams as unknown as Team[];
-        for (const newTeamId of newTeamsIds.split(",")) {
-          if (!userTeams.some((userTeam) => userTeam.id === +newTeamId)) {
-            await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (?, ?)", [user.id, +newTeamId]);
-          }
-        }
-
-        const teamsToRemove: number[] = [];
-        userTeams.forEach((userTeam) => {
-          if (!newTeamsIds.split(",").includes(String(userTeam.id))) {
-            teamsToRemove.push(userTeam.id as number);
-          }
-        });
-
-        if (teamsToRemove !== undefined && teamsToRemove.length > 0) {
-          for (const team of teamsToRemove) {
-            await app.db.query("DELETE FROM Users_Teams WHERE userId = ? AND teamId = ?", [user.id, team]);
-          }
-        }
-      } else {
-        for (const newTeamId of newTeamsIds.split(",")) {
-          await app.db.query("INSERT INTO Users_Teams (userId, teamId) VALUES (?, ?)", [user.id, +newTeamId]);
-        }
-      }
-      await app.db.commit();
-    } catch (err) {
-      await app.db.rollback();
-      throw err;
     }
   };
 
