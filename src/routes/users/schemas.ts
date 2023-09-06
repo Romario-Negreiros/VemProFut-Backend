@@ -346,6 +346,14 @@ const schemas = {
           },
         },
       },
+      401: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
       404: {
         type: "object",
         properties: {
