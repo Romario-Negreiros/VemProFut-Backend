@@ -89,6 +89,9 @@ const schemas = {
             createdAt: { type: "string" },
             isActive: { type: "number" },
           },
+          jwt: {
+            type: "string",
+          },
         },
       },
       400: {
