@@ -1,4 +1,5 @@
 import teamServices from "../../services/team.services";
+import venuesServices from "../../services/venues.services";
 
 import type { Controller, ITeamController, RequestParams } from "./types";
 
@@ -16,7 +17,13 @@ class TeamController implements ITeamController {
         return await res.status(404).send({ error: "Time não encontrado." });
       }
 
-      await res.status(200).send({ team });
+      let venue;
+      if (team.venueId) {
+        venue = await venuesServices.get(team.venueId);
+      }
+
+      delete team.venueId;
+      await res.status(200).send({ team: { ...team, venue } });
     } catch (error) {
       console.log(error);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar buscar o usuário." });
