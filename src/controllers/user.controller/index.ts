@@ -88,6 +88,30 @@ class UserController implements IUserController {
     if (password === undefined || password === null) {
       return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
+
+    try {
+      let user = await userServices.get(email, ["password"]);
+      if (!user) {
+        return await res.status(404).send({ error: "Usuário não encontrado, o email inserido pode estar incorreto." })
+      }
+
+      const isPasswordCorrect = await bcrypt.compare(password, user?.password as string);
+      if (!isPasswordCorrect) {
+        return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
+      }
+
+      user = await userServices.get(email);
+      delete user?.verifyEmailToken;
+      delete user?.verifyEmailTokenExpiration;
+      delete user?.password;
+
+      const jwt = app.fastify.jwt.sign(user as User, { expiresIn: 86400 });
+
+      await res.status(200).send({ user, jwt });
+    } catch (error) {
+      console.log(error);
+      await res.status(500).send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." })
+    }
   };
 
   verifyEmail: Controller = async (req, res) => {
@@ -163,7 +187,7 @@ class UserController implements IUserController {
     
     try {
       const { email, teams } = req.user.valueOf() as User;
-
+      console.log(email);
       const { userTeams } = body;
       if (userTeams && teams) {
         if (((teams?.length - userTeams?.teamsToRemove.length) + userTeams?.teamsToAdd.length) > 3) {
@@ -171,7 +195,7 @@ class UserController implements IUserController {
         }
       }
 
-      const user = await userServices.get(email as string); // refactor userServices.get
+      const user = await userServices.get(email as string, ["password"]); // refactor userServices.get
       const isPasswordCorrect = await bcrypt.compare(body.password, user?.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
@@ -185,7 +209,7 @@ class UserController implements IUserController {
       await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
     } catch (err) {
       console.log(err);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os times do usuário." });
+      await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
     }
   };
 
