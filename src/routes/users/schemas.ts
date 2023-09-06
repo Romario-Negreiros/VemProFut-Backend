@@ -270,14 +270,11 @@ const schemas = {
     headers: {
       type: "object",
       properties: {
-        "Content-Type": {
-          type: "string",
-        },
         Authorization: {
           type: "string",
         },
       },
-      required: ["Content-Type", "Authorization"],
+      required: ["Authorization"],
     },
   },
 
@@ -324,8 +321,11 @@ const schemas = {
   },
 
   delete: {
-    params: {
+    body: {
       email: {
+        type: "string",
+      },
+      password: {
         type: "string",
       },
     },
@@ -362,6 +362,15 @@ const schemas = {
           },
         },
       },
+    },
+    headers: {
+      type: "object",
+      properties: {
+        Authorization: {
+          type: "string",
+        },
+      },
+      required: ["Authorization"],
     },
   },
 };
