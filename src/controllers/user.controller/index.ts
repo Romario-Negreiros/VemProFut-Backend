@@ -213,13 +213,20 @@ class UserController implements IUserController {
   };
 
   delete: Controller = async (req, res) => {
-    const { email } = req.params as RequestParams;
-    if (!email) {
-      return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
+    const { password } = req.body as RequestBody;
+    if (!password) {
+      return await res.status(400).send({ error: "O campo 'senha' está vazio." });
     }
 
     try {
-      await userServices.delete(email);
+      const { email } = req.user.valueOf() as User;
+      const user = await userServices.get(email as string, ["password"]);
+      const isPasswordCorrect = await bcrypt.compare(password, user?.password as string);
+      if (!isPasswordCorrect) {
+        return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
+      }
+
+      await userServices.delete(email as string);
 
       await res.status(200).send({ success: "Usuário deletado com sucesso." });
     } catch (error) {
