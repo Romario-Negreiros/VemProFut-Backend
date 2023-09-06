@@ -12,4 +12,6 @@ export default interface User extends RowDataPacket {
   isActive?: number;
   verifyEmailToken?: string | null;
   verifyEmailTokenExpiration?: string | null;
+  resetPasswordToken?: string | null;
+  resetPasswordTokenExpiration?: string | null;
 }
