@@ -146,9 +146,26 @@ const schemas = {
             id: { type: "number" },
             name: { type: "string" },
             email: { type: "string" },
-            teams: { type: "array" },
-            created_at: { type: "string" },
-            is_active: { type: "number" },
+            teams: {
+              id: { type: "number" },
+              name: { type: "string" },
+              code: { type: "string" },
+              country: { type: "string" },
+              translatedCountry: { type: "string" },
+              founded: { type: "number" },
+              logo: { type: "string" },
+              venue: {
+                id: { type: "number" },
+                name: { type: "string" },
+                address: { type: "string" },
+                city: { type: "string" },
+                capacity: { type: "string" },
+                surface: { type: "string" },
+                image: { type: "string" },
+              },
+            },
+            createdAt: { type: "string" },
+            isActive: { type: "number" },
           },
           jwt: {
             type: "string",
@@ -256,8 +273,53 @@ const schemas = {
         "Content-Type": {
           type: "string",
         },
+        Authorization: {
+          type: "string",
+        },
       },
-      required: ["Content-Type"],
+      required: ["Content-Type", "Authorization"],
+    },
+  },
+
+  forgotPassword: {
+    body: {
+      email: {
+        type: "string",
+      },
+    },
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          success: {
+            type: "string",
+          },
+        },
+      },
+      400: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
+      404: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
+      500: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
     },
   },
 
