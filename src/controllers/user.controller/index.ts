@@ -15,19 +15,19 @@ class UserController implements IUserController {
     const { name, email, password, teams } = req.body as RequestBody;
     let wasCreated = false;
 
-    if (name === undefined || name === null) {
+    if (!name) {
       return await res.status(400).send({ error: "O campo 'nome' está faltando na requisição." });
     }
 
-    if (email === undefined || email === null) {
+    if (!email) {
       return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
     }
 
-    if (password === undefined || password === null) {
+    if (!password) {
       return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
 
-    if (teams !== undefined && teams.length > 3) {
+    if (teams && teams.length > 3) {
       return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
     }
 
@@ -62,15 +62,15 @@ class UserController implements IUserController {
       await res.status(201).send({
         success: `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
       });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
 
       if (wasCreated) {
         await userServices.delete(email);
       }
 
-      const error = err as QueryError;
-      if (error.errno === 1062) {
+      const queryError = error as QueryError;
+      if (queryError.errno === 1062) {
         return await res.status(400).send({ error: "O usuário já está registrado." });
       }
 
@@ -81,11 +81,11 @@ class UserController implements IUserController {
   signIn: Controller = async (req, res) => {
     const { email, password } = req.body as RequestBody;
 
-    if (email === undefined || email === null) {
+    if (!email) {
       return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
     }
 
-    if (password === undefined || password === null) {
+    if (!password) {
       return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
 
@@ -116,27 +116,27 @@ class UserController implements IUserController {
 
   verifyEmail: Controller = async (req, res) => {
     const { email, token } = req.params as RequestParams;
-    if (email === undefined) {
+    if (!email) {
       return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
     }
 
-    if (token === undefined) {
+    if (!token) {
       return await res.status(400).send({ error: "Parâmetro 'token' está vazio." });
     }
 
     try {
       const user = await userServices.get(email);
 
-      if (user === undefined) {
+      if (!user) {
         return await res.status(404).send({ error: "Usuário não encontrado." });
       }
 
-      if (user.verifyEmailToken === null || user.verifyEmailTokenExpiration === null) {
+      if (!user.verifyEmailToken || !user.verifyEmailTokenExpiration) {
         return await res.status(400).send({ error: "Usuário com o email já verificado." });
       }
 
       const now = new Date();
-      const tokenExpiration = new Date(user.verifyEmailTokenExpiration as string);
+      const tokenExpiration = new Date(user.verifyEmailTokenExpiration);
 
       if (now > tokenExpiration) {
         await userServices.delete(email);
@@ -173,8 +173,8 @@ class UserController implements IUserController {
       const jwt = app.fastify.jwt.sign(user, { expiresIn: 86400 });
 
       await res.status(200).send({ user, jwt });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar verificar o email do usuário." });
     }
   };
@@ -187,7 +187,6 @@ class UserController implements IUserController {
     
     try {
       const { email, teams } = req.user.valueOf() as User;
-      console.log(email);
       const { userTeams } = body;
       if (userTeams && teams) {
         if (((teams?.length - userTeams?.teamsToRemove.length) + userTeams?.teamsToAdd.length) > 3) {
@@ -207,15 +206,15 @@ class UserController implements IUserController {
       await userServices.update(email as string, body, { email }, undefined, userTeams);
 
       await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
     }
   };
 
   delete: Controller = async (req, res) => {
     const { email } = req.params as RequestParams;
-    if (email === undefined) {
+    if (!email) {
       return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
     }
 
@@ -223,8 +222,8 @@ class UserController implements IUserController {
       await userServices.delete(email);
 
       await res.status(200).send({ success: "Usuário deletado com sucesso." });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar deletar o usuário." });
     }
   };

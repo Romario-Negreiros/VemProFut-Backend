@@ -12,7 +12,7 @@ class UserServices implements IUserServices {
     if (fields) {
       const query = `SELECT ${fields.join(",")} FROM Users WHERE email = ?`;
       const [result] = await app.db.query<User[]>(query, [email]);
-      if (result?.[0] === undefined) {
+      if (!result?.[0]) {
         return undefined;
       } else {
         return result?.[0];
@@ -25,7 +25,7 @@ class UserServices implements IUserServices {
     LEFT JOIN Teams ON Users_Teams.teamId = Teams.id 
     WHERE email = ? GROUP BY Users.id`;
       const [result] = await app.db.query<User[]>(query, [email]);
-      if (result?.[0] === undefined) {
+      if (!result?.[0]) {
         return undefined;
       } else {
         const user = result[0];
@@ -68,7 +68,7 @@ class UserServices implements IUserServices {
 
       await app.db.query("SET @userId = LAST_INSERT_ID()");
 
-      if (teams !== undefined) {
+      if (teams) {
         for (const team of teams) {
           await app.db.query(
             "INSERT INTO Users_Teams (userId, teamId, noUserWithSameTeam) VALUES (@userId, ?, CONCAT(@userId, ?))",
@@ -158,9 +158,9 @@ class UserServices implements IUserServices {
       await app.db.query("DELETE FROM Users WHERE email = ?", [email]);
 
       await app.db.commit();
-    } catch (err) {
+    } catch (error) {
       await app.db.rollback();
-      throw err;
+      throw error;
     }
   };
 }
