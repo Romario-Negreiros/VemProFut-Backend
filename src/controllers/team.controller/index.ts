@@ -1,16 +1,16 @@
 import teamServices from "../../services/team.services";
 
-import type { Controller, ITeamController, IParams } from "./types";
+import type { Controller, ITeamController, RequestParams } from "./types";
 
 class TeamController implements ITeamController {
-  getOne: Controller = async (req, res) => {
-    const { id } = req.params as IParams["getOne"];
+  get: Controller = async (req, res) => {
+    const { id } = req.params as RequestParams;
     if (!id) {
       return await res.status(400).send({ error: "Parâmetro 'id do time' está vazio." });
     }
 
     try {
-      const team = await teamServices.getOne(id);
+      const team = await teamServices.get(id);
 
       if (!team) {
         return await res.status(404).send({ error: "Time não encontrado." });
