@@ -8,12 +8,12 @@ import env from "../config/env.config";
 
 import type { SendMailOptions } from "nodemailer";
 
-type TemplateNames = "verify-email";
+type TemplateNames = "verify-email" | "forgot-password";
 
 interface VerifyEmailTemplateVars {
-  name: string;
-  email: string;
-  token: string;
+  name?: string;
+  email?: string;
+  token?: string;
 }
 
 type TemplateVars = VerifyEmailTemplateVars;
