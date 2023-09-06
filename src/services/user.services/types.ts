@@ -1,6 +1,13 @@
 import type User from "../../models/user.model";
 
-type KeysToPickFromUser = "name" | "password" | "isActive" | "verifyEmailToken" | "verifyEmailTokenExpiration";
+type KeysToPickFromUser =
+  | "name"
+  | "password"
+  | "isActive"
+  | "verifyEmailToken"
+  | "verifyEmailTokenExpiration"
+  | "resetPasswordToken"
+  | "resetPasswordTokenExpiration";
 
 export interface IUserServices {
   get: (email: string, fields?: KeysToPickFromUser[]) => Promise<User | undefined>;
@@ -16,8 +23,8 @@ export interface IUserServices {
     email: string,
     columnsToUpdate: Pick<User, KeysToPickFromUser>,
     columnsInWhereClause: {
-      id?: number,
-      email?: string,
+      id?: number;
+      email?: string;
     },
     whereComparision?: "and" | "or",
     userTeams?: {
