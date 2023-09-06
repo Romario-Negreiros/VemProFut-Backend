@@ -17,8 +17,8 @@ class TeamController implements ITeamController {
       }
 
       await res.status(200).send({ team });
-    } catch (err) {
-      console.log(err);
+    } catch (error) {
+      console.log(error);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar buscar o usuário." });
     }
   };
