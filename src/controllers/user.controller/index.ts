@@ -92,7 +92,7 @@ class UserController implements IUserController {
     try {
       let user = await userServices.get(email, ["password"]);
       if (!user) {
-        return await res.status(404).send({ error: "Usuário não encontrado, o email inserido pode estar incorreto." })
+        return await res.status(404).send({ error: "Usuário não encontrado, o email inserido pode estar incorreto." });
       }
 
       const isPasswordCorrect = await bcrypt.compare(password, user?.password as string);
@@ -110,7 +110,7 @@ class UserController implements IUserController {
       await res.status(200).send({ user, jwt });
     } catch (error) {
       console.log(error);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." })
+      await res.status(500).send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." });
     }
   };
 
@@ -180,16 +180,16 @@ class UserController implements IUserController {
   };
 
   update: Controller = async (req, res) => {
-    const body = req.body as RequestBody
+    const body = req.body as RequestBody;
     if (!body.password) {
       return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
-    
+
     try {
       const { email, teams } = req.user.valueOf() as User;
       const { userTeams } = body;
       if (userTeams && teams) {
-        if (((teams?.length - userTeams?.teamsToRemove.length) + userTeams?.teamsToAdd.length) > 3) {
+        if (teams?.length - userTeams?.teamsToRemove.length + userTeams?.teamsToAdd.length > 3) {
           return await res.status(400).send({ error: "Você só pode acompanhar até três times!" });
         }
       }
@@ -209,6 +209,51 @@ class UserController implements IUserController {
     } catch (error) {
       console.log(error);
       await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
+    }
+  };
+
+  forgotPassword: Controller = async (req, res) => {
+    const { email } = req.body as RequestBody;
+    if (!email) {
+      return await res.status(400).send({ error: "O campo 'email' está faltando na requisição." });
+    }
+
+    const resetPasswordToken = crypto.randomBytes(10).toString("hex");
+    const resetPasswordTokenExpiration = new Date();
+    resetPasswordTokenExpiration.setHours(resetPasswordTokenExpiration.getHours() + 1);
+
+    let wasUserUpdated = false;
+    try {
+      await userServices.update(
+        email,
+        { resetPasswordToken, resetPasswordTokenExpiration: resetPasswordTokenExpiration.toISOString() },
+        { email },
+      );
+      wasUserUpdated = true;
+
+      await app.mailer.send({
+        to: email,
+        subject: "Redefinir senha",
+        templateName: "forgot-password",
+        templateVars: {
+          email,
+          token: resetPasswordToken,
+        },
+      });
+    } catch (error) {
+      console.log(error);
+
+      if (wasUserUpdated) {
+        await userServices.update(
+          email,
+          {
+            resetPasswordToken: null,
+            resetPasswordTokenExpiration: null,
+          },
+          { email },
+        );
+      }
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar recuperar senha." });
     }
   };
 
