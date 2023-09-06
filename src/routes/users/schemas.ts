@@ -322,9 +322,6 @@ const schemas = {
 
   delete: {
     body: {
-      email: {
-        type: "string",
-      },
       password: {
         type: "string",
       },
