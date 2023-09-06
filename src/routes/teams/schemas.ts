@@ -1,5 +1,5 @@
 const schemas = {
-  getOne: {
+  get: {
     params: {
       id: {
         type: "number",
