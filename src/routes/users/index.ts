@@ -18,10 +18,10 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
   fastify.post(
     `${baseUrl}/sign-in`,
     {
-      schema: schemas.signIn
+      schema: schemas.signIn,
     },
-    userController.signIn
-  )
+    userController.signIn,
+  );
 
   // PUT ROUTES
   fastify.put(
@@ -36,16 +36,17 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
     `${baseUrl}/update`,
     {
       schema: schemas.update,
-      onRequest: [fastify.authenticate]
+      onRequest: [fastify.authenticate],
     },
     userController.update,
   );
 
   // DELETE ROUTES
   fastify.delete(
-    `${baseUrl}/delete/:email`,
+    `${baseUrl}/delete`,
     {
       schema: schemas.delete,
+      onRequest: [fastify.authenticate]
     },
     userController.delete,
   );
