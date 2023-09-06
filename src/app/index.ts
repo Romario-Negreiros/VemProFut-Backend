@@ -35,9 +35,9 @@ class App implements IApp {
   private readonly setDatabase = async () => {
     try {
       this.db = await createDatabaseConnection();
-    } catch (err) {
-      if (err instanceof Error) {
-        console.log(`Erro ao tentar se conectar com banco de dados:\n${err.message}`);
+    } catch (error) {
+      if (error instanceof Error) {
+        console.log(`Erro ao tentar se conectar com banco de dados:\n${error.message}`);
       }
     }
   };
@@ -58,9 +58,9 @@ class App implements IApp {
   };
 
   private readonly runServer = () => {
-    this.fastify.listen({ port: 5000 }, (err) => {
-      if (err !== null) {
-        console.log(`Erro ao rodar servidor local:\n${err.message}`);
+    this.fastify.listen({ port: 5000 }, (error) => {
+      if (error) {
+        console.log(`Erro ao rodar servidor local:\n${error.message}`);
       }
     });
   };
