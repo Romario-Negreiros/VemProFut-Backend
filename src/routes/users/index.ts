@@ -49,6 +49,14 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
     userController.forgotPassword,
   );
 
+  fastify.put(
+    `${baseUrl}/reset-password/:email/:token`,
+    { 
+      schema: schemas.resetPassword 
+    },
+    userController.resetPassword,
+  );
+
   // DELETE ROUTES
   fastify.delete(
     `${baseUrl}/delete`,
