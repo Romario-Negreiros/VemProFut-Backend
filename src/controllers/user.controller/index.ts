@@ -90,7 +90,7 @@ class UserController implements IUserController {
     }
 
     try {
-      let user = await userServices.get(email, ["password", "isActive"]);
+      let user = await userServices.get(email, ["password", "isActive", "verifyEmailTokenExpiration"]);
       if (!user) {
         return await res.status(404).send({ error: "Usuário não encontrado, o email inserido pode estar incorreto." });
       }
@@ -100,7 +100,20 @@ class UserController implements IUserController {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
       }
 
-      if (!user.isActive) {
+      if (!user.isActive && user.verifyEmailTokenExpiration) {
+        const now = new Date();
+        const tokenExpiration = new Date(user.verifyEmailTokenExpiration);
+        if (now > tokenExpiration) {
+          await userServices.delete(email);
+
+          return await res
+            .status(401)
+            .send({
+              error:
+                "Usuário com registro incompleto, e com token de verificação de email expirado, crie a conta novamente.",
+            });
+        }
+
         return await res
           .status(401)
           .send({ error: "O usuário com registro incompleto, necessário verificar o email." });
