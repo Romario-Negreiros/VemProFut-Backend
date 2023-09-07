@@ -329,6 +329,11 @@ const schemas = {
         type: "string",
       },
     },
+    body: {
+      newPassword: {
+        type: "string",
+      },
+    },
     response: {
       200: {
         type: "object",
