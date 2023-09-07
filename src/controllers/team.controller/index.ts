@@ -23,10 +23,10 @@ class TeamController implements ITeamController {
       }
 
       delete team.venueId;
-      await res.status(200).send({ team: { ...team, venue } });
+      return await res.status(200).send({ team: { ...team, venue } });
     } catch (error) {
       console.log(error);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar buscar o usuário." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar buscar o usuário." });
     }
   };
 }
