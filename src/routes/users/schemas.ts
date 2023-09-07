@@ -320,6 +320,51 @@ const schemas = {
     },
   },
 
+  resetPassword: {
+    params: {
+      email: {
+        type: "string",
+      },
+      token: {
+        type: "string",
+      },
+    },
+    response: {
+      200: {
+        type: "object",
+        properties: {
+          success: {
+            type: "string",
+          },
+        },
+      },
+      400: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
+      404: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
+      500: {
+        type: "object",
+        properties: {
+          error: {
+            type: "string",
+          },
+        },
+      },
+    },
+  },
+
   delete: {
     body: {
       password: {
