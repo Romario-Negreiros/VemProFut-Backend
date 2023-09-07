@@ -59,7 +59,7 @@ class UserController implements IUserController {
         },
       });
 
-      await res.status(201).send({
+      return await res.status(201).send({
         success: `Você foi registrado com sucesso, ${name}. Verifique seu email para começar a receber as notificações semanais.`,
       });
     } catch (error) {
@@ -74,7 +74,7 @@ class UserController implements IUserController {
         return await res.status(400).send({ error: "O usuário já está registrado." });
       }
 
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar registrar o usuário." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar registrar o usuário." });
     }
   };
 
@@ -128,10 +128,10 @@ class UserController implements IUserController {
 
       const jwt = app.fastify.jwt.sign(user as User, { expiresIn: 86400 });
 
-      await res.status(200).send({ user, jwt });
+      return await res.status(200).send({ user, jwt });
     } catch (error) {
       console.log(error);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." });
     }
   };
 
@@ -194,10 +194,10 @@ class UserController implements IUserController {
 
       const jwt = app.fastify.jwt.sign(user, { expiresIn: 86400 });
 
-      await res.status(200).send({ user, jwt });
+      return await res.status(200).send({ user, jwt });
     } catch (error) {
       console.log(error);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar verificar o email do usuário." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar verificar o email do usuário." });
     }
   };
 
@@ -227,10 +227,10 @@ class UserController implements IUserController {
       delete body.teams;
       await userServices.update(email as string, body, { email }, undefined, userTeams);
 
-      await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
+      return await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
     } catch (error) {
       console.log(error);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
     }
   };
 
@@ -263,7 +263,7 @@ class UserController implements IUserController {
         },
       });
 
-      await res.status(200).send({ success: "Verifique seu email para completar o procedimento." });
+      return await res.status(200).send({ success: "Verifique seu email para completar o procedimento." });
     } catch (error) {
       console.log(error);
 
@@ -339,8 +339,7 @@ class UserController implements IUserController {
       return await res.status(200).send({ success: "Sua senha foi redefinida com sucesso!" });
     } catch (error) {
       console.log(error);
-
-      return await res.status(500).send({ error: "Erro no processamento interno ao tentar recuperar senha." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar redefinir senha." });
     }
   };
 
@@ -360,10 +359,10 @@ class UserController implements IUserController {
 
       await userServices.delete(email as string);
 
-      await res.status(200).send({ success: "Usuário deletado com sucesso." });
+      return await res.status(200).send({ success: "Usuário deletado com sucesso." });
     } catch (error) {
       console.log(error);
-      await res.status(500).send({ error: "Erro no processamento interno ao tentar deletar o usuário." });
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar deletar o usuário." });
     }
   };
 }
