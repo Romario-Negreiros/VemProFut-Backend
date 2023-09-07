@@ -41,12 +41,20 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
     userController.update,
   );
 
+  fastify.put(
+    `${baseUrl}/forgot-password`,
+    {
+      schema: schemas.forgotPassword,
+    },
+    userController.forgotPassword,
+  );
+
   // DELETE ROUTES
   fastify.delete(
     `${baseUrl}/delete`,
     {
       schema: schemas.delete,
-      onRequest: [fastify.authenticate]
+      onRequest: [fastify.authenticate],
     },
     userController.delete,
   );
