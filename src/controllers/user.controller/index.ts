@@ -90,7 +90,7 @@ class UserController implements IUserController {
     }
 
     try {
-      let user = await userServices.get(email, ["password"]);
+      let user = await userServices.get(email, ["password", "isActive"]);
       if (!user) {
         return await res.status(404).send({ error: "Usuário não encontrado, o email inserido pode estar incorreto." });
       }
@@ -100,9 +100,17 @@ class UserController implements IUserController {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
       }
 
+      if (!user.isActive) {
+        return await res
+          .status(401)
+          .send({ error: "O usuário com registro incompleto, necessário verificar o email." });
+      }
+
       user = await userServices.get(email);
       delete user?.verifyEmailToken;
       delete user?.verifyEmailTokenExpiration;
+      delete user?.resetPasswordToken;
+      delete user?.resetPasswordTokenExpiration;
       delete user?.password;
 
       const jwt = app.fastify.jwt.sign(user as User, { expiresIn: 86400 });
@@ -117,11 +125,11 @@ class UserController implements IUserController {
   verifyEmail: Controller = async (req, res) => {
     const { email, token } = req.params as RequestParams;
     if (!email) {
-      return await res.status(400).send({ error: "Parâmetro 'email' está vazio." });
+      return await res.status(400).send({ error: "Parâmetro 'email' está faltando na requisição." });
     }
 
     if (!token) {
-      return await res.status(400).send({ error: "Parâmetro 'token' está vazio." });
+      return await res.status(400).send({ error: "Parâmetro 'token' está faltando na requisição." });
     }
 
     try {
@@ -162,12 +170,13 @@ class UserController implements IUserController {
         {
           email,
         },
-        "and",
       );
 
       user.isActive = 1;
       delete user.verifyEmailToken;
       delete user.verifyEmailTokenExpiration;
+      delete user.resetPasswordToken;
+      delete user.resetPasswordTokenExpiration;
       delete user.password;
 
       const jwt = app.fastify.jwt.sign(user, { expiresIn: 86400 });
@@ -259,10 +268,73 @@ class UserController implements IUserController {
     }
   };
 
+  resetPassword: Controller = async (req, res) => {
+    const { email, token } = req.params as RequestParams;
+    const { newPassword } = req.body as RequestBody;
+
+    if (!email) {
+      return await res.status(400).send({ error: "Parâmetro 'email' está faltando na requisição." });
+    }
+
+    if (!token) {
+      return await res.status(400).send({ error: "Parâmetro 'token' está faltando na requisição." });
+    }
+
+    if (!newPassword) {
+      return await res.status(400).send({ error: "O campo 'nova senha' está faltando na requisição." });
+    }
+
+    try {
+      const user = await userServices.get(email, ["resetPasswordToken", "resetPasswordTokenExpiration"]);
+
+      if (!user) {
+        return await res.status(404).send({ error: "Usuário não encontrado." });
+      }
+
+      if (!user.resetPasswordToken || !user.resetPasswordTokenExpiration) {
+        return await res
+          .status(400)
+          .send({ error: "Usuário não possui solicitação de recuperação de senha ativa ou a senha já foi redefinida" });
+      }
+
+      const now = new Date();
+      const tokenExpiration = new Date(user.resetPasswordTokenExpiration);
+
+      if (now > tokenExpiration) {
+        return await res
+          .status(400)
+          .send({ error: "O token de redefinição de senha expirou, envie uma nova solicitação." });
+      }
+
+      if (token !== user.resetPasswordToken) {
+        return await res.status(400).send({ error: "Token inválido, envie uma nova solicitação." });
+      }
+
+      const newPasswordHashed = await bcrypt.hash(newPassword, 15);
+      await userServices.update(
+        email,
+        {
+          resetPasswordToken: null,
+          resetPasswordTokenExpiration: null,
+          password: newPasswordHashed,
+        },
+        {
+          email,
+        },
+      );
+
+      return await res.status(200).send({ success: "Sua senha foi redefinida com sucesso!" });
+    } catch (error) {
+      console.log(error);
+
+      return await res.status(500).send({ error: "Erro no processamento interno ao tentar recuperar senha." });
+    }
+  };
+
   delete: Controller = async (req, res) => {
     const { password } = req.body as RequestBody;
     if (!password) {
-      return await res.status(400).send({ error: "O campo 'senha' está vazio." });
+      return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
 
     try {
