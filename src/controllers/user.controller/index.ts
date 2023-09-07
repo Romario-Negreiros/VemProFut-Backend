@@ -240,6 +240,8 @@ class UserController implements IUserController {
           token: resetPasswordToken,
         },
       });
+
+      await res.status(200).send({ success: "Verifique seu email para completar o procedimento." });
     } catch (error) {
       console.log(error);
 
