@@ -7,6 +7,8 @@ export interface IUserController {
   signIn: Controller;
   verifyEmail: Controller;
   update: Controller;
+  forgotPassword: Controller;
+  resetPassword: Controller;
   delete: Controller;
 }
 
@@ -19,6 +21,7 @@ export interface RequestBody {
   name?: string;
   email?: string;
   password?: string;
+  newPassword?: string;
   teams?: number[];
   userTeams?: {
     removeAll: boolean;
