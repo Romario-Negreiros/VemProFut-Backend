@@ -1,21 +1,19 @@
 import app from "../../app";
 
 import teamServices from "../team.services";
-import venuesServices from "../venues.services";
 
 import type User from "../../models/user.model";
 import type { IUserServices } from "./types";
 
 class UserServices implements IUserServices {
   get: IUserServices["get"] = async (email, fields) => {
-    // refactor: get only some fields of user
     if (fields) {
       const query = `SELECT ${fields.join(",")} FROM Users WHERE email = ?`;
       const [result] = await app.db.query<User[]>(query, [email]);
       if (!result?.[0]) {
         return undefined;
       } else {
-        return result?.[0];
+        return result[0];
       }
     } else {
       const query = `
@@ -36,13 +34,7 @@ class UserServices implements IUserServices {
           const userTeamsIds = user.teams as unknown as string;
           for (const teamId of userTeamsIds?.split(",")) {
             const team = await teamServices.get(+teamId);
-            if (team) {
-              let venue;
-              if (team.venueId) {
-                venue = await venuesServices.get(team.venueId);
-              }
-              teams.push({ ...team, venue });
-            }
+            if (team) teams.push({ ...team });
           }
           return { ...user, teams };
         }
