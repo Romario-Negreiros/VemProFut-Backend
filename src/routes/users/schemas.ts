@@ -81,7 +81,7 @@ const schemas = {
                 name: { type: "string" },
                 address: { type: "string" },
                 city: { type: "string" },
-                capacity: { type: "string" },
+                capacity: { type: "number" },
                 surface: { type: "string" },
                 image: { type: "string" },
               },
