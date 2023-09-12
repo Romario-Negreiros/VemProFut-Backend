@@ -1,6 +1,10 @@
 import type { RowDataPacket } from "mysql2";
-import type Team from "./team.model";
+import type TeamModel from "./team.model";
 import type Venue from "./venue.model";
+
+interface Team extends TeamModel {
+  venue?: Venue | null;
+}
 
 export default interface User extends RowDataPacket {
   id?: number;
@@ -8,7 +12,7 @@ export default interface User extends RowDataPacket {
   password?: string;
   email?: string;
   createdAt?: string;
-  teams?: Array<Team & Venue> | null;
+  teams?: Team[];
   isActive?: number;
   verifyEmailToken?: string | null;
   verifyEmailTokenExpiration?: string | null;
