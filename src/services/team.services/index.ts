@@ -13,14 +13,12 @@ class TeamServices implements ITeamServices {
       return undefined;
     } else {
       const team = result[0];
+      let venue = null;
       if (team.venueId) {
-        const venue = await venuesServices.get(team.venueId);
-        delete team.venueId;
-        return { ...team, venue };
-      } else {
-        delete team.venueId;
-        return { ...team, venue: null };
+        venue = await venuesServices.get(team.venueId);
       }
+      delete team.venueId;
+      return { ...team, venue };
     }
   };
 }
