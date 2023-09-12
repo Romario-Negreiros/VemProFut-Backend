@@ -15,8 +15,10 @@ class TeamServices implements ITeamServices {
       const team = result[0];
       if (team.venueId) {
         const venue = venuesServices.get(team.venueId);
+        delete team.venueId;
         return { ...team, venue };
       } else {
+        delete team.venueId;
         return { ...team, venue: null };
       }
     }
