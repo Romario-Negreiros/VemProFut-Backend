@@ -31,7 +31,7 @@ class UserServices implements IUserServices {
           return { ...user };
         } else {
           const teams = [];
-          const userTeamsIds = user.teams as unknown as string;
+          const userTeamsIds = user.teams;
           for (const teamId of userTeamsIds?.split(",")) {
             const team = await teamServices.get(+teamId);
             if (team) teams.push({ ...team });

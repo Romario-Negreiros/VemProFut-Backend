@@ -10,7 +10,7 @@ class TeamServices implements ITeamServices {
     const [result] = await app.db.query<Team[]>("SELECT * FROM Teams WHERE id = ?", [id]);
     
     if (result?.[0] === undefined) {
-      return undefined;
+      return null;
     } else {
       const team = result[0];
       let venue = null;
