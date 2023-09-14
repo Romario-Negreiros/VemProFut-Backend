@@ -95,7 +95,7 @@ class UserController implements IUserController {
         return await res.status(404).send({ error: "Usuário não encontrado, o email inserido pode estar incorreto." });
       }
 
-      const isPasswordCorrect = await bcrypt.compare(password, user?.password as string);
+      const isPasswordCorrect = await bcrypt.compare(password, user.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
       }
@@ -208,7 +208,7 @@ class UserController implements IUserController {
     }
 
     try {
-      const { email, teams } = req.user.valueOf() as User;
+      const { email, teams } = req.user.valueOf() as unknown as User;
       const { userTeams } = body;
       if (userTeams && teams) {
         if (teams?.length - userTeams?.teamsToRemove.length + userTeams?.teamsToAdd.length > 3) {
@@ -216,7 +216,7 @@ class UserController implements IUserController {
         }
       }
 
-      const user = await userServices.get(email as string, ["password"]); // refactor userServices.get
+      const user = await userServices.get(email , ["password"]); // refactor userServices.get
       const isPasswordCorrect = await bcrypt.compare(body.password, user?.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
@@ -225,7 +225,7 @@ class UserController implements IUserController {
       delete body.password;
       delete body.userTeams;
       delete body.teams;
-      await userServices.update(email as string, body, { email }, undefined, userTeams);
+      await userServices.update(email , body, { email }, undefined, userTeams);
 
       return await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
     } catch (error) {
@@ -350,14 +350,14 @@ class UserController implements IUserController {
     }
 
     try {
-      const { email } = req.user.valueOf() as User;
-      const user = await userServices.get(email as string, ["password"]);
+      const { email } = req.user.valueOf() as unknown as User;
+      const user = await userServices.get(email , ["password"]);
       const isPasswordCorrect = await bcrypt.compare(password, user?.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
       }
 
-      await userServices.delete(email as string);
+      await userServices.delete(email );
 
       return await res.status(200).send({ success: "Usuário deletado com sucesso." });
     } catch (error) {
