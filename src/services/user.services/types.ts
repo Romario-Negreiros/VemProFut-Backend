@@ -17,7 +17,7 @@ interface Team extends Omit<TeamModel, "venueId"> {
 }
 
 interface User extends Omit<UserModel, "teams"> {
-  teams: string | Team | null;
+  teams: string | Team[] | null;
 }
 
 export interface IUserServices {
