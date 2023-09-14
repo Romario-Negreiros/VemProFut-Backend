@@ -47,11 +47,11 @@ class App implements IApp {
       origin: "http://localhost:3333",
     });
     void this.fastify.register(fastifyJWT, {
-      secret: env.appSecret
-    })
+      secret: env.appSecret,
+    });
     void this.fastify.decorate("authenticate", jwtPlugin);
   };
-  
+
   private readonly setRoutes = () => {
     usersRoutes(this.fastify);
     teamsRoutes(this.fastify);

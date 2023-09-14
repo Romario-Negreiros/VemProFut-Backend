@@ -2,7 +2,6 @@ import type UserModel from "../../models/user.model";
 import type TeamModel from "../../models/team.model";
 import type Venue from "../../models/venue.model";
 
-
 type KeysToPickFromUser =
   | "name"
   | "password"

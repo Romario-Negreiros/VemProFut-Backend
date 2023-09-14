@@ -51,8 +51,8 @@ function usersRoutes(fastify: FastifyInstance & { authenticate?: any }) {
 
   fastify.put(
     `${baseUrl}/reset-password/:email/:token`,
-    { 
-      schema: schemas.resetPassword 
+    {
+      schema: schemas.resetPassword,
     },
     userController.resetPassword,
   );

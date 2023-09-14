@@ -106,12 +106,10 @@ class UserController implements IUserController {
         if (now > tokenExpiration) {
           await userServices.delete(email);
 
-          return await res
-            .status(401)
-            .send({
-              error:
-                "Usuário com registro incompleto, e com token de verificação de email expirado, crie a conta novamente.",
-            });
+          return await res.status(401).send({
+            error:
+              "Usuário com registro incompleto, e com token de verificação de email expirado, crie a conta novamente.",
+          });
         }
 
         return await res
@@ -131,7 +129,9 @@ class UserController implements IUserController {
       return await res.status(200).send({ user, jwt });
     } catch (error) {
       console.log(error);
-      return await res.status(500).send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." });
+      return await res
+        .status(500)
+        .send({ error: "Erro no processamento interno ao tentar iniciar sessão do usuário." });
     }
   };
 
@@ -197,7 +197,9 @@ class UserController implements IUserController {
       return await res.status(200).send({ user, jwt });
     } catch (error) {
       console.log(error);
-      return await res.status(500).send({ error: "Erro no processamento interno ao tentar verificar o email do usuário." });
+      return await res
+        .status(500)
+        .send({ error: "Erro no processamento interno ao tentar verificar o email do usuário." });
     }
   };
 
@@ -216,7 +218,7 @@ class UserController implements IUserController {
         }
       }
 
-      const user = await userServices.get(email , ["password"]); // refactor userServices.get
+      const user = await userServices.get(email, ["password"]); // refactor userServices.get
       const isPasswordCorrect = await bcrypt.compare(body.password, user?.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
@@ -225,12 +227,14 @@ class UserController implements IUserController {
       delete body.password;
       delete body.userTeams;
       delete body.teams;
-      await userServices.update(email , body, { email }, undefined, userTeams);
+      await userServices.update(email, body, { email }, undefined, userTeams);
 
       return await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
     } catch (error) {
       console.log(error);
-      return await res.status(500).send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
+      return await res
+        .status(500)
+        .send({ error: "Erro no processamento interno ao tentar atualizar os dados do usuário." });
     }
   };
 
@@ -351,13 +355,13 @@ class UserController implements IUserController {
 
     try {
       const { email } = req.user.valueOf() as unknown as User;
-      const user = await userServices.get(email , ["password"]);
+      const user = await userServices.get(email, ["password"]);
       const isPasswordCorrect = await bcrypt.compare(password, user?.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
       }
 
-      await userServices.delete(email );
+      await userServices.delete(email);
 
       return await res.status(200).send({ success: "Usuário deletado com sucesso." });
     } catch (error) {

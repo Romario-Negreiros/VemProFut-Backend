@@ -8,7 +8,7 @@ import type Team from "../../models/team.model";
 class TeamServices implements ITeamServices {
   get: ITeamServices["get"] = async (id) => {
     const [result] = await app.db.query<Team[]>("SELECT * FROM Teams WHERE id = ?", [id]);
-    
+
     if (result?.[0] === undefined) {
       return null;
     } else {

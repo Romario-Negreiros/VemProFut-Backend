@@ -2,7 +2,7 @@ import type { FastifyRequest, FastifyReply } from "fastify";
 
 export type Controller = (req: FastifyRequest, res: FastifyReply) => Promise<void>;
 
-export interface IUserController { 
+export interface IUserController {
   signUp: Controller;
   signIn: Controller;
   verifyEmail: Controller;
@@ -27,5 +27,5 @@ export interface RequestBody {
     removeAll: boolean;
     teamsToRemove: number[];
     teamsToAdd: number[];
-  }
+  };
 }
