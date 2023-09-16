@@ -21,6 +21,7 @@ export interface RequestBody {
   name?: string;
   email?: string;
   password?: string;
+  confirmPassword?: string;
   newPassword?: string;
   teams?: number[];
   userTeams?: {

@@ -205,7 +205,7 @@ class UserController implements IUserController {
 
   update: Controller = async (req, res) => {
     const body = req.body as RequestBody;
-    if (!body.password) {
+    if (!body.confirmPassword) {
       return await res.status(400).send({ error: "O campo 'senha' está faltando na requisição." });
     }
 
@@ -219,14 +219,16 @@ class UserController implements IUserController {
       }
 
       const user = await userServices.get(email, ["password"]); // refactor userServices.get
-      const isPasswordCorrect = await bcrypt.compare(body.password, user?.password as string);
+      const isPasswordCorrect = await bcrypt.compare(body.confirmPassword, user?.password as string);
       if (!isPasswordCorrect) {
         return await res.status(401).send({ error: "A senha inserida não coincide com a do usuário." });
       }
 
-      delete body.password;
       delete body.userTeams;
       delete body.teams;
+      if (body.password) {
+        body.password = await bcrypt.hash(body.password, 15);
+      }
       await userServices.update(email, body, { email }, undefined, userTeams);
 
       return await res.status(201).send({ success: `Seus times foram atualizados com sucesso.` });
