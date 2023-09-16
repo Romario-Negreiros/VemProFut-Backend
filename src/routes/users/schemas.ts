@@ -204,11 +204,11 @@ const schemas = {
       name: {
         type: "string",
       },
-      password: {
+      confirmPassword: {
         type: "string",
       },
-      email: {
-        type: "string",
+      password: {
+        type: "string"
       },
       userTeams: {
         type: "object",
