@@ -2,7 +2,7 @@ import env from "./env.config";
 
 export default {
   HOST: env.dbHost, // change with hosting service url later
-  USER: "root",
+  USER: env.dbUser,
   PASSWORD: env.dbPassword,
-  DB: "VemProFut",
+  DB: env.dbName,
 };
