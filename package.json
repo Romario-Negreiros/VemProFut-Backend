@@ -5,8 +5,8 @@
   "main": "server.ts",
   "scripts": {
     "dev": "nodemon src/app/index.ts",
-    "start": "sucrase ./src -d ./dist --transforms typescript,imports",
-    "build": "node dist/index.js",
+    "start": "sucrase ./src -d ./build --transforms typescript,imports",
+    "build": "node build/index.js",
     "lint": "npx eslint --fix src/**",
     "prettier": "npx prettier --write src/**"
   },
