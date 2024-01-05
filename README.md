@@ -2,30 +2,31 @@
     <h2 align="center">VemProFut</h2>
 </p>
 
-Back end of VemProFut's project, still under construction...
+Acompanhe os seus times do coração, ou só o que você quer acompanhar mesmo,
+veja estatistícas de campeonatos, copas e muito mais... Não muito, mas tem
+outras coisinhas.
 
 ### Stack
 
-- [Node.js](https://nodejs.org/en)
+- [Nextjs](https://nextjs.org)
 - [Typescript](https://www.typescriptlang.org)
-- [Fastify](https://fastify.dev)
-- [MySQL](https://www.mysql.com)
+- [Material UI](https://mui.com)
 
 ### How to contribute
 
 ```
-    >> Fork this repository
+    >> Faça um fork deste repositório
 
-    >> Create a new branch containing your feature
+    >> Crie uma nova branch com as alterações
     git checkout -b feature
 
-    >> Commit your changes
+    >> Faça um commit das alterações
     git commit -m "new feature"
 
-    >> Push to your branch
+    >> Faça um push na sua branch
     git push origin feature
 
-    >> After your pull request's merge has been done, you can delete your branch
+    >> Depois que o merge do seu pull request for feito, você pode deletar sua branch
 
 ```
 
