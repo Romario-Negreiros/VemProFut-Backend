@@ -5,7 +5,6 @@ export default interface Team extends RowDataPacket {
   name: string;
   code?: string | null;
   country: string;
-  translatedCountry: string;
   countryFlag: string;
   founded?: number | null;
   logo: string;

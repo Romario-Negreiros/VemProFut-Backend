@@ -43,7 +43,7 @@ class App implements IApp {
     try {
       this.db = await createDatabaseConnection();
 
-      this.seedDatabase();
+      void this.seedDatabase();
     } catch (error) {
       if (error instanceof Error) {
         console.log(`Erro ao tentar se conectar com banco de dados:\n${error.message}`);
